@@ -1,4 +1,4 @@
-package math.algebra.permgroups;
+package math.algebra.permgroups.permutation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
