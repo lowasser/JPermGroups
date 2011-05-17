@@ -40,7 +40,9 @@ final class Identity<E> extends Permutation<E> {
   }
 
   @Override public boolean equals(@Nullable Object obj) {
-    if (obj instanceof Identity) {
+    if (obj == this) {
+      return true;
+    } else if (obj instanceof Identity) {
       return domain().equals(((Permutation) obj).domain());
     }
     return super.equals(obj);

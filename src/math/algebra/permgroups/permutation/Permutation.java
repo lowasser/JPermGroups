@@ -75,7 +75,9 @@ public abstract class Permutation<E> {
   }
 
   @Override public boolean equals(Object obj) {
-    if (obj instanceof Permutation) {
+    if (obj == this) {
+      return true;
+    } else if (obj instanceof Permutation) {
       Permutation p = (Permutation) obj;
       return asMap().equals(p.asMap());
     }
