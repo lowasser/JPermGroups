@@ -6,6 +6,8 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 final class Identity<E> extends Permutation<E> {
   private final ImmutableMap<E, E> map;
 
@@ -35,5 +37,12 @@ final class Identity<E> extends Permutation<E> {
 
   @Override Permutation<E> createInverse() {
     return this;
+  }
+
+  @Override public boolean equals(@Nullable Object obj) {
+    if (obj instanceof Identity) {
+      return domain().equals(((Permutation) obj).domain());
+    }
+    return super.equals(obj);
   }
 }
