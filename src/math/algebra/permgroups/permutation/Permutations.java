@@ -11,6 +11,14 @@ public final class Permutations {
   private Permutations() {
   }
 
+  public static <E> Permutation<E> compose(Permutation<E> p,
+      Permutation<E>... perms) {
+    for (Permutation<E> q : perms) {
+      p = new ComposedPermutation<E>(p, q);
+    }
+    return new MapPermutation<E>(p);
+  }
+
   public static <E> Permutation<E> permutation(Map<E, E> map) {
     return new MapPermutation<E>(map);
   }

@@ -33,14 +33,6 @@ public abstract class Permutation<E> {
 
   abstract Map<E, E> createAsMap();
 
-  public static <E> Permutation<E> compose(Permutation<E> p,
-      Permutation<E>... perms) {
-    for (Permutation<E> q : perms) {
-      p = new ComposedPermutation<E>(p, q);
-    }
-    return new MapPermutation<E>(p);
-  }
-
   public Permutation<E> compose(Permutation<E> perm) {
     checkNotNull(perm);
     return new MapPermutation<E>(new ComposedPermutation<E>(this, perm));
