@@ -1,8 +1,11 @@
 package math.algebra.permgroups.permutation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +18,16 @@ public final class Permutations {
       Permutation<E>... perms) {
     for (Permutation<E> q : perms) {
       p = new ComposedPermutation<E>(p, q);
+    }
+    return new MapPermutation<E>(p);
+  }
+
+  public static <E> Permutation<E> compose(Iterable<Permutation<E>> perms) {
+    Iterator<Permutation<E>> iter = perms.iterator();
+    checkArgument(iter.hasNext());
+    Permutation<E> p = iter.next();
+    while (iter.hasNext()) {
+      p = new ComposedPermutation<E>(p, iter.next());
     }
     return new MapPermutation<E>(p);
   }

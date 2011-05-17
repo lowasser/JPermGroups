@@ -31,6 +31,15 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
   private final Collection<Permutation<E>> groupMembers;
   private final ImmutableCollection<Permutation<E>> generators;
 
+  private PermutationGroup(ImmutableSet<E> domain,
+      ImmutableSetMultimap<E, Permutation<E>> cosetTables) {
+    this.generators = cosetTables.values();
+    this.domain = domain;
+    this.cosetTables = cosetTables;
+    id = Permutations.identity(domain);
+    groupMembers = constructGroupMembers();
+  }
+
   public PermutationGroup(Set<E> domain, Collection<Permutation<E>> generators) {
     this.generators = ImmutableList.copyOf(generators);
     this.domain = ImmutableSet.copyOf(domain);
@@ -173,5 +182,18 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
 
   @Override public int size() {
     return groupMembers.size();
+  }
+
+  public boolean isSubgroupOf(PermutationGroup<E> g) {
+    checkNotNull(g);
+    return size() <= g.size() && g.containsAll(generators);
+  }
+
+  @SuppressWarnings("unchecked") @Override public boolean equals(Object o) {
+    if (o instanceof PermutationGroup) {
+      PermutationGroup h = (PermutationGroup) o;
+      return size() == h.size() && isSubgroupOf(h);
+    }
+    return super.equals(o);
   }
 }
