@@ -6,6 +6,9 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class Permutation<E> {
+  Permutation() {
+  }
+
   public E image(E e) {
     return asMap().get(e);
   }
@@ -45,9 +48,33 @@ public abstract class Permutation<E> {
     return new MapPermutation<E>(this).inverse();
   }
 
+  public static <E> Permutation<E> permutation(Map<E, E> map) {
+    return new MapPermutation<E>(map);
+  }
+
+  public static <E> Permutation<E> identity(Set<E> domain) {
+    return new Identity<E>(domain);
+  }
+
   static <E> void checkDomains(Permutation<E> p, Permutation<E> q) {
     if (!p.domain().equals(q.domain())) {
       throw new DomainMismatchException(p, q);
     }
+  }
+
+  @Override public int hashCode() {
+    return asMap().hashCode();
+  }
+
+  @Override public boolean equals(Object obj) {
+    if (obj instanceof Permutation) {
+      Permutation p = (Permutation) obj;
+      return asMap().equals(p.asMap());
+    }
+    return false;
+  }
+
+  @Override public String toString() {
+    return asMap().toString();
   }
 }
