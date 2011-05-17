@@ -56,14 +56,6 @@ public abstract class Permutation<E> {
     return new MapPermutation<E>(this).inverse();
   }
 
-  public static <E> Permutation<E> permutation(Map<E, E> map) {
-    return new MapPermutation<E>(map);
-  }
-
-  public static <E> Permutation<E> identity(Set<E> domain) {
-    return new Identity<E>(domain);
-  }
-
   static <E> void checkDomains(Permutation<E> p, Permutation<E> q) {
     if (!p.domain().equals(q.domain())) {
       throw new DomainMismatchException(p, q);
