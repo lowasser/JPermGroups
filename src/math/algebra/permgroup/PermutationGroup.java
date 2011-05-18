@@ -2,17 +2,18 @@ package math.algebra.permgroup;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import algorithms.Partition;
+import algorithms.UnorderedPair;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import java.util.AbstractSet;
@@ -39,17 +40,36 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     return generateGroup(domain, Arrays.asList(generators));
   }
 
+  private static <E> UnorderedPair<E> image(Permutation<E> sigma,
+      UnorderedPair<E> p) {
+    return UnorderedPair.of(sigma.image(p.getFirst()),
+        sigma.image(p.getSecond()));
+  }
+
+  private static <E> boolean unify(Map<E, Partition> part, UnorderedPair<E> p) {
+    return part.get(p.getFirst()).combine(part.get(p.getSecond()));
+  }
+
   private final ImmutableSet<E> domain;
   private final Permutation<E> id;
-  private final ImmutableSetMultimap<E, Permutation<E>> cosetTables;
+  private List<Set<Permutation<E>>> cosetTables;
+  private List<Predicate<Permutation<E>>> constraints;
+
   private final Collection<Permutation<E>> groupMembers;
+
   private final ImmutableCollection<Permutation<E>> generators;
 
   private PermutationGroup(ImmutableSet<E> domain,
-      ImmutableSetMultimap<E, Permutation<E>> cosetTables) {
-    this.generators = cosetTables.values();
+      List<Set<Permutation<E>>> cosetTables,
+      List<Predicate<Permutation<E>>> constraints) {
+    ImmutableList.Builder<Permutation<E>> builder = ImmutableList.builder();
+    for (Set<Permutation<E>> table : cosetTables) {
+      builder.addAll(table);
+    }
+    this.generators = builder.build();
     this.domain = domain;
     this.cosetTables = cosetTables;
+    this.constraints = constraints;
     id = Permutations.identity(domain);
     groupMembers = constructGroupMembers();
   }
@@ -66,8 +86,35 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     }
 
     id = Permutations.identity(domain);
-    cosetTables = constructCosetTables(generators);
+    constraints = Lists.newArrayListWithCapacity(degree());
+    for (final E e : domain) {
+      constraints.add(new Predicate<Permutation<E>>() {
+        @Override public boolean apply(Permutation<E> input) {
+          return Permutations.stabilizes(input, e);
+        }
+      });
+    }
+    constructCosetTables(generators);
     groupMembers = constructGroupMembers();
+  }
+
+  @Override public boolean contains(Object o) {
+    if (o instanceof Permutation) {
+      return contains((Permutation<?>) o);
+    }
+    return false;
+  }
+
+  public int degree() {
+    return domain.size();
+  }
+
+  @SuppressWarnings("unchecked") @Override public boolean equals(Object o) {
+    if (o instanceof PermutationGroup) {
+      PermutationGroup h = (PermutationGroup) o;
+      return size() == h.size() && isSubgroupOf(h);
+    }
+    return super.equals(o);
   }
 
   public Collection<Permutation<E>> generators() {
@@ -78,137 +125,18 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     return false;
   }
 
-  @Override public boolean contains(Object o) {
-    if (o instanceof Permutation) {
-      return contains((Permutation<?>) o);
-    }
-    return false;
-  }
-
-  private boolean contains(Permutation alpha) {
-    for (Map.Entry<E, Collection<Permutation<E>>> entry : cosetTables.asMap()
-      .entrySet()) {
-      if (id.equals(alpha))
-        return true;
-      E e = entry.getKey();
-      Permutation<E> found = null;
-      for (Permutation<E> gamma : entry.getValue()) {
-        @SuppressWarnings("unchecked")
-        Permutation<E> p = gamma.inverse().compose(alpha);
-        if (Permutations.stabilizes(p, e)) {
-          found = p;
-          break;
-        }
-      }
-      if (found == null) {
-        return false;
-      }
-      alpha = found;
-    }
-    return id.equals(alpha);
-  }
-
-  @Override public String toString() {
-    StringBuilder builder = new StringBuilder();
-    builder.append("<");
-    Joiner.on(", ").appendTo(builder, generators);
-    builder.append(">");
-    return builder.toString();
-  }
-
-  private Collection<Permutation<E>> constructGroupMembers() {
-    @SuppressWarnings("unchecked")
-    List<Set<Permutation<E>>> tables = (List) cosetTables.asMap().values()
-      .asList();
-
-    return Collections2.transform(Sets.cartesianProduct(tables),
-        new Function<List<Permutation<E>>, Permutation<E>>() {
-          @Override public Permutation<E> apply(List<Permutation<E>> input) {
-            return Permutations.compose(input);
-          }
-        });
-  }
-
-  private ImmutableSetMultimap<E, Permutation<E>> constructCosetTables(
-      Collection<Permutation<E>> generators) {
-    SetMultimap<E, Permutation<E>> cTables = HashMultimap.create(degree(), 10);
-    for (E e : domain) {
-      cTables.put(e, id);
-    }
-    Set<Permutation<E>> todos = Sets.newLinkedHashSet(generators);
-    while (!todos.isEmpty()) {
-      Iterator<Permutation<E>> iterator = todos.iterator();
-      Permutation<E> alpha = iterator.next();
-      iterator.remove();
-      todos.addAll(filter(cTables, alpha));
-    }
-    return ImmutableSetMultimap.copyOf(cTables);
-  }
-
-  private Set<Permutation<E>> filter(SetMultimap<E, Permutation<E>> cTables,
-      Permutation<E> alpha) {
-    List<E> omega = domain.asList();
-
-    for (int i = 0; i < omega.size(); i++) {
-      if (id.equals(alpha)) {
-        return ImmutableSet.of();
-      }
-      E e = omega.get(i);
-      Permutation<E> found = null;
-      Set<Permutation<E>> table = cTables.get(e);
-      for (Permutation<E> gamma : table) {
-        Permutation<E> p = gamma.inverse().compose(alpha);
-        if (Permutations.stabilizes(p, e)) {
-          found = p;
-          break;
-        }
-      }
-      if (found == null) {
-        cTables.put(e, alpha);
-        return newFilters(cTables, alpha, i);
-      }
-      alpha = found;
-    }
-    return ImmutableSet.of();
-  }
-
-  private Set<Permutation<E>> newFilters(
-      SetMultimap<E, Permutation<E>> cTables, Permutation<E> alpha, int index) {
-    List<E> omega = domain.asList();
-    Set<Permutation<E>> filters = Sets.newHashSet();
-    for (E e : omega.subList(0, index + 1)) {
-      for (Permutation<E> p : cTables.get(e)) {
-        filters.add(p.compose(alpha));
-      }
-    }
-    for (E e : omega.subList(index + 1, omega.size())) {
-      for (Permutation<E> p : cTables.get(e)) {
-        filters.add(alpha.compose(p));
-      }
-    }
-    filters.remove(alpha);
-    return filters;
-  }
-
-  @Override public Iterator<Permutation<E>> iterator() {
-    return groupMembers.iterator();
-  }
-
-  @Override public int size() {
-    return groupMembers.size();
-  }
-
   public boolean isSubgroupOf(PermutationGroup<E> g) {
     checkNotNull(g);
     return size() <= g.size() && g.containsAll(generators);
   }
 
-  @SuppressWarnings("unchecked") @Override public boolean equals(Object o) {
-    if (o instanceof PermutationGroup) {
-      PermutationGroup h = (PermutationGroup) o;
-      return size() == h.size() && isSubgroupOf(h);
-    }
-    return super.equals(o);
+  public boolean isTransitive() {
+    E e = domain.iterator().next();
+    return orbit(e).size() == degree();
+  }
+
+  @Override public Iterator<Permutation<E>> iterator() {
+    return groupMembers.iterator();
   }
 
   public Set<E> orbit(E e) {
@@ -239,12 +167,129 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     return orbits;
   }
 
-  public boolean isTransitive() {
-    E e = domain.iterator().next();
-    return orbit(e).size() == degree();
+  @Override public int size() {
+    return groupMembers.size();
   }
 
-  public int degree() {
-    return domain.size();
+  @Override public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("<");
+    Joiner.on(", ").appendTo(builder, generators);
+    builder.append(">");
+    return builder.toString();
+  }
+
+  private Map<E, Partition> blockifyOn(E a, E b) {
+    Map<E, Partition> partition = Maps.newHashMapWithExpectedSize(degree());
+    for (E e : domain) {
+      partition.put(e, new Partition());
+    }
+    partition.get(a).combine(partition.get(b));
+    Queue<UnorderedPair<E>> queue = Lists.newLinkedList();
+    queue.offer(UnorderedPair.of(a, b));
+    while (!queue.isEmpty()) {
+      UnorderedPair<E> p = queue.poll();
+      for (Permutation<E> g : generators) {
+        UnorderedPair<E> p2 = image(g, p);
+        if (unify(partition, p2)) {
+          queue.offer(p2);
+        }
+      }
+    }
+    return partition;
+  }
+
+  private void constructCosetTables(Collection<Permutation<E>> generators) {
+    cosetTables = Lists.newArrayList();
+    for (int i = 0; i < constraints.size(); i++) {
+      Set<Permutation<E>> table = Sets.newLinkedHashSet();
+      table.add(id);
+      cosetTables.add(table);
+    }
+    Set<Permutation<E>> todos = Sets.newLinkedHashSet(generators);
+    while (!todos.isEmpty()) {
+      Iterator<Permutation<E>> iterator = todos.iterator();
+      Permutation<E> alpha = iterator.next();
+      iterator.remove();
+      todos.addAll(filter(alpha));
+    }
+    for (int i = 0; i < cosetTables.size(); i++) {
+      cosetTables.set(i, ImmutableSet.copyOf(cosetTables.get(i)));
+    }
+    cosetTables = ImmutableList.copyOf(cosetTables);
+  }
+
+  private Collection<Permutation<E>> constructGroupMembers() {
+    return Collections2.transform(Sets.cartesianProduct(cosetTables),
+        new Function<List<Permutation<E>>, Permutation<E>>() {
+          @Override public Permutation<E> apply(List<Permutation<E>> input) {
+            return Permutations.compose(input);
+          }
+        });
+  }
+
+  private boolean contains(Permutation alpha) {
+    for (int i = 0; i < constraints.size(); i++) {
+      Predicate<Permutation<E>> constraint = constraints.get(i);
+      Set<Permutation<E>> table = cosetTables.get(i);
+      if (id.equals(alpha))
+        return true;
+      Permutation<E> found = null;
+      for (Permutation<E> gamma : table) {
+        @SuppressWarnings("unchecked")
+        Permutation<E> p = gamma.inverse().compose(alpha);
+        if (constraint.apply(p)) {
+          found = p;
+          break;
+        }
+      }
+      if (found == null) {
+        return false;
+      }
+      alpha = found;
+    }
+    return id.equals(alpha);
+  }
+
+  private Set<Permutation<E>> filter(Permutation<E> alpha) {
+
+    for (int i = 0; i < constraints.size(); i++) {
+      if (id.equals(alpha)) {
+        return ImmutableSet.of();
+      }
+      Predicate<Permutation<E>> constraint = constraints.get(i);
+      Permutation<E> found = null;
+      Set<Permutation<E>> table = cosetTables.get(i);
+      for (Permutation<E> gamma : table) {
+        Permutation<E> p = gamma.inverse().compose(alpha);
+        if (constraint.apply(p)) {
+          found = p;
+          break;
+        }
+      }
+      if (found == null) {
+        table.add(alpha);
+        return newFilters(alpha, i);
+      }
+      alpha = found;
+    }
+    return ImmutableSet.of();
+  }
+
+  private Set<Permutation<E>> newFilters(Permutation<E> alpha, int index) {
+    List<E> omega = domain.asList();
+    Set<Permutation<E>> filters = Sets.newHashSet();
+    for (int i = 0; i <= index; i++) {
+      for (Permutation<E> p : cosetTables.get(i)) {
+        filters.add(p.compose(alpha));
+      }
+    }
+    for (int i = index + 1; i < omega.size(); i++) {
+      for (Permutation<E> p : cosetTables.get(i)) {
+        filters.add(alpha.compose(p));
+      }
+    }
+    filters.remove(alpha);
+    return filters;
   }
 }
