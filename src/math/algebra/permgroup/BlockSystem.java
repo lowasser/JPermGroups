@@ -7,6 +7,7 @@ import algorithms.Partition;
 import com.google.common.base.Functions;
 import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -33,15 +34,13 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
   }
 
   public static <E> BlockSystem<E> trivial(PermutationGroup<E> group) {
-    ImmutableMap.Builder<E, Partition> builder = ImmutableMap.builder();
-    ImmutableMap.Builder<Partition, E> reverse = ImmutableMap.builder();
+    ImmutableBiMap.Builder<E, Partition> builder = ImmutableBiMap.builder();
     for (E e : group.domain()) {
-      Partition p = new Partition();
-      builder.put(e, p);
-      reverse.put(p, e);
+      builder.put(e, new Partition());
     }
-    return new BlockSystem<E>(builder.build(),
-        Multimaps.forMap(reverse.build()), group);
+    ImmutableBiMap<E,Partition> partition = builder.build();
+    return new BlockSystem<E>(partition,
+        Multimaps.forMap(partition.inverse()), group);
   }
 
   public boolean isTrivial() {
