@@ -1,5 +1,6 @@
 package math.algebra.permgroups.permutation;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import algorithms.FunctionMap;
 
@@ -33,10 +34,10 @@ public abstract class Permutation<E> {
     return (map == null) ? map = createAsMap() : map;
   }
 
-  private transient Function<E,E> function = null;
-  
+  private transient Function<E, E> function = null;
+
   public Function<E, E> asFunction() {
-    return (function == null) ? function = createAsFunction():function;
+    return (function == null) ? function = createAsFunction() : function;
   }
 
   Function<E, E> createAsFunction() {
@@ -93,5 +94,11 @@ public abstract class Permutation<E> {
 
   @Override public String toString() {
     return asMap().toString();
+  }
+
+  public Permutation<E> extend(Set<E> newDomain) {
+    checkArgument(newDomain.containsAll(domain()));
+    return (newDomain.size() == degree()) ? this : new ExtendedPermutation<E>(
+        newDomain, this);
   }
 }

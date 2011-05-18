@@ -1,5 +1,7 @@
 package math.algebra.permgroups.permutation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableSet;
@@ -46,5 +48,10 @@ final class Identity<E> extends Permutation<E> {
 
   @Override public Permutation<E> inverse() {
     return this;
+  }
+
+  @Override public Permutation<E> extend(Set<E> newDomain) {
+    checkArgument(newDomain.containsAll(domain));
+    return new Identity<E>(newDomain);
   }
 }

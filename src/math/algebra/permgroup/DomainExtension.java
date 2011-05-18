@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 
 import math.algebra.permgroups.permutation.Permutation;
-import math.algebra.permgroups.permutation.Permutations;
 
 final class DomainExtension<E> implements
     Function<Permutation<E>, Permutation<E>> {
@@ -21,6 +20,6 @@ final class DomainExtension<E> implements
   }
 
   @Override public Permutation<E> apply(Permutation<E> sigma) {
-    return Permutations.extend(sigma, domain);
+    return sigma.extend(domain);
   }
 }

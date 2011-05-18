@@ -25,10 +25,6 @@ public final class Permutations {
     return new MapPermutation<E>(p);
   }
 
-  public static <E> Permutation<E> extend(Permutation<E> sigma, Set<E> domain) {
-    return new ExtendedPermutation<E>(domain, sigma);
-  }
-
   public static <E> Permutation<E> compose(Iterable<Permutation<E>> perms) {
     Iterator<Permutation<E>> iter = perms.iterator();
     checkArgument(iter.hasNext());

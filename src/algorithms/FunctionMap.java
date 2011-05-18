@@ -11,10 +11,6 @@ import com.google.common.collect.Maps;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 
 public final class FunctionMap<K, V> extends AbstractMap<K, V> {
   private final class EntrySet extends ForwardingCollection<Entry<K, V>>
@@ -22,8 +18,8 @@ public final class FunctionMap<K, V> extends AbstractMap<K, V> {
     private final Collection<Entry<K, V>> entryCollection;
 
     public EntrySet() {
-      this.entryCollection = Collections2.transform(keySet,
-          new Function<K, Entry<K, V>>() {
+      this.entryCollection =
+          Collections2.transform(keySet, new Function<K, Entry<K, V>>() {
             @Override public java.util.Map.Entry<K, V> apply(K input) {
               return Maps.immutableEntry(input, function.apply(input));
             }
@@ -37,12 +33,7 @@ public final class FunctionMap<K, V> extends AbstractMap<K, V> {
 
   private final Set<K> keySet;
   private final Function<K, V> function;
-  private transient final Future<Integer> hashCode = new FutureTask<Integer>(
-      new Callable<Integer>() {
-        @Override public Integer call() {
-          return entrySet().hashCode();
-        }
-      });
+  private transient Integer hashCode = null;
 
   public FunctionMap(Set<K> keySet, Function<K, V> function) {
     this.keySet = ImmutableSet.copyOf(keySet);
@@ -64,12 +55,6 @@ public final class FunctionMap<K, V> extends AbstractMap<K, V> {
   }
 
   @Override public int hashCode() {
-    try {
-      return hashCode.get();
-    } catch (InterruptedException e) {
-      return super.hashCode();
-    } catch (ExecutionException e) {
-      return super.hashCode();
-    }
+    return (hashCode == null) ? hashCode = entrySet().hashCode() : hashCode;
   }
 }
