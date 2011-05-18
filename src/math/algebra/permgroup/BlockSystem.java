@@ -38,9 +38,9 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
     for (E e : group.domain()) {
       builder.put(e, new Partition());
     }
-    ImmutableBiMap<E,Partition> partition = builder.build();
-    return new BlockSystem<E>(partition,
-        Multimaps.forMap(partition.inverse()), group);
+    ImmutableBiMap<E, Partition> partition = builder.build();
+    return new BlockSystem<E>(partition, Multimaps.forMap(partition.inverse()),
+        group);
   }
 
   public boolean isTrivial() {
@@ -70,8 +70,11 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
 
   public SetMultimap<Partition, E> blocks() {
     if (blocks == null) {
-      return blocks = Multimaps.unmodifiableSetMultimap(Multimaps.invertFrom(
-          Multimaps.forMap(partition), HashMultimap.<Partition, E> create()));
+      return blocks =
+          Multimaps
+            .unmodifiableSetMultimap(Multimaps.invertFrom(
+                Multimaps.forMap(partition),
+                HashMultimap.<Partition, E> create()));
     }
     return blocks;
   }
@@ -147,19 +150,23 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
   }
 
   private boolean isValid() {
-    for (Permutation<E> sigma : group.generators()) {
-      Map<Partition, Partition> induced = Maps
-        .newHashMapWithExpectedSize(domain().size());
-      for (E e : domain()) {
+    boolean good = true;
+    Iterator<Permutation<E>> generatorIter = group.generators().iterator();
+    while (generatorIter.hasNext() && good) {
+      Permutation<E> sigma = generatorIter.next();
+      Map<Partition, Partition> induced =
+          Maps.newHashMapWithExpectedSize(domain().size());
+      Iterator<E> domainIterator = domain().iterator();
+      while (domainIterator.hasNext() && good) {
+        E e = domainIterator.next();
         Partition p = partition.get(e);
         Partition p2 = partition.get(sigma.image(e));
 
         Partition pPrime = induced.put(p, p2);
-        if (pPrime != null && !pPrime.equals(p2)) {
-          return false;
-        }
+        good &= (pPrime == null || pPrime.equals(p2));
       }
+      good &= induced.size() == nBlocks;
     }
-    return true;
+    return good;
   }
 }
