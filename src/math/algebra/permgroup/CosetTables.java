@@ -11,6 +11,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
@@ -20,10 +21,18 @@ import math.algebra.permgroups.permutation.Permutation;
 import math.algebra.permgroups.permutation.Permutations;
 
 final class CosetTables<E> extends ForwardingList<Collection<Permutation<E>>> {
+  public static <E> CosetTables<E> trivial(Set<E> domain) {
+    return immutable(new CosetTables<E>(domain));
+  }
+
   public static <E> CosetTables<E> build(Set<E> domain,
       Collection<Permutation<E>> generators,
       List<Predicate<Permutation<E>>> filters) {
-    return immutable(new CosetTables<E>(domain, generators, filters));
+    CosetTables<E> table = new CosetTables<E>(domain, filters);
+    for (Permutation<E> g : generators) {
+      table.addGenerator(g);
+    }
+    return immutable(table);
   }
 
   static <E> CosetTables<E> immutable(CosetTables<E> tables) {
@@ -36,41 +45,158 @@ final class CosetTables<E> extends ForwardingList<Collection<Permutation<E>>> {
         ImmutableList.copyOf(tables.filters));
   }
 
+  static <E> CosetTables<E> newMutableCosetTables() {
+    return new CosetTables<E>();
+  }
+
+  static <E> CosetTables<E> mutableCopy(CosetTables<E> copyTables) {
+    return new CosetTables<E>(copyTables);
+  }
+
   private final List<Collection<Permutation<E>>> tables;
 
   final List<Predicate<Permutation<E>>> filters;
 
-  CosetTables(List<? extends Collection<Permutation<E>>> tables,
+  private transient Collection<Permutation<E>> generatedPermutations;
+
+  /**
+   * Initializes mutable, empty coset tables.
+   */
+  private CosetTables() {
+    this.tables = Lists.newArrayList();
+    this.filters = Lists.newArrayList();
+  }
+
+  /**
+   * Initializes a mutable copy of the specified CosetTables.
+   */
+  private CosetTables(CosetTables<E> copyTables) {
+    this.filters = copyTables.filters;
+    this.tables = Lists.newArrayListWithCapacity(copyTables.size());
+    for (Collection<Permutation<E>> table : copyTables) {
+      tables.add(Sets.newLinkedHashSet(table));
+    }
+  }
+
+  /**
+   * Initializes an immutable CosetTables with the specified tables and filters.
+   */
+  private CosetTables(List<? extends Collection<Permutation<E>>> tables,
       List<Predicate<Permutation<E>>> filters) {
     this.tables = ImmutableList.copyOf(tables);
     this.filters = filters;
   }
 
-  CosetTables() {
-    this.tables = Lists.newArrayList();
-    this.filters = Lists.newArrayList();
+  /**
+   * Initializes mutable coset tables to the identity group on the specified
+   * domain.
+   */
+  private CosetTables(ImmutableSet<E> domain) {
+    this(domain, new StabilizingFilterList<E>(domain));
   }
 
-  private CosetTables(Set<E> domain, Collection<Permutation<E>> generators,
-      List<Predicate<Permutation<E>>> filters) {
-    Permutation<E> id = Permutations.identity(domain);
-    this.filters = filters;
-    tables = Lists.newArrayListWithCapacity(filters.size());
-    for (int i = 0; i < filters.size(); i++) {
-      Set<Permutation<E>> table = Sets.newLinkedHashSet();
-      table.add(id);
-      tables.add(table);
-    }
+  private CosetTables(Set<E> domain) {
+    this(ImmutableSet.copyOf(domain));
+  }
 
-    Queue<Permutation<E>> todo = Lists.newLinkedList(generators);
-    while (!todo.isEmpty()) {
-      Permutation<E> sigma = todo.poll();
-      todo.addAll(filter(sigma));
+  private CosetTables(Set<E> domain, List<Predicate<Permutation<E>>> filters) {
+    this.filters = filters;
+    this.tables = Lists.newArrayListWithCapacity(filters.size());
+    Set<Permutation<E>> init =
+        Collections.singleton(Permutations.identity(domain));
+    for (int i = 0; i < filters.size(); i++) {
+      tables.add(Sets.newHashSet(init));
     }
+  }
+
+  /**
+   * Use with caution, only for direct products.
+   */
+  public boolean addAll(CosetTables<E> t2) {
+    return this.tables.addAll(t2.tables) && this.filters.addAll(t2.filters);
+  }
+
+  public CosetTables<E> extend(Set<E> domain) {
+    return new CosetTables<E>(Lists.transform(tables,
+        CollectionMap.forFunction(DomainExtension.forDomain(domain))), filters);
+  }
+
+  public CosetTables<E> extend(Collection<Permutation<E>> newGenerators) {
+    CosetTables<E> tables2 = mutableCopy(this);
+    for (Permutation<E> g : newGenerators) {
+      tables2.addGenerator(g);
+    }
+    return immutable(tables2);
+  }
+
+  public Collection<Permutation<E>> generatedPermutations() {
+    if (generatedPermutations == null) {
+      Set<List<Permutation<E>>> factors = Sets.cartesianProduct(setTables());
+      return generatedPermutations =
+          Collections2.transform(factors,
+              new Function<List<Permutation<E>>, Permutation<E>>() {
+                @Override public Permutation<E>
+                    apply(List<Permutation<E>> input) {
+                  return Permutations.compose(input);
+                }
+              });
+    }
+    return generatedPermutations;
+  }
+
+  public boolean generates(Permutation<E> alpha) {
+    for (int i = 0; i < tables.size(); i++) {
+      if (Permutations.isIdentity(alpha)) {
+        return true;
+      }
+      Predicate<Permutation<E>> filter = filters.get(i);
+      Collection<Permutation<E>> table = tables.get(i);
+      Permutation<E> found = null;
+      for (Permutation<E> gamma : table) {
+        Permutation<E> p = gamma.inverse().compose(alpha);
+        if (filter.apply(p)) {
+          found = p;
+          break;
+        }
+      }
+      if (found == null)
+        return false;
+      alpha = found;
+    }
+    return true;
+  }
+
+  @Override public CosetTables<E> subList(int fromIndex, int toIndex) {
+    return new CosetTables<E>(tables.subList(fromIndex, toIndex),
+        filters.subList(fromIndex, toIndex));
   }
 
   @Override protected List<Collection<Permutation<E>>> delegate() {
     return tables;
+  }
+
+  boolean isValid() {
+    if (isEmpty())
+      return true;
+    Iterator<Permutation<E>> iterator = Iterables.concat(this).iterator();
+    Set<E> domain = iterator.next().domain();
+    boolean good = true;
+    while (good && iterator.hasNext()) {
+      good &= iterator.next().domain().equals(domain);
+    }
+    Iterator<Collection<Permutation<E>>> tableIterator = iterator();
+    while (good && tableIterator.hasNext()) {
+      good &= !tableIterator.next().isEmpty();
+    }
+    return good;
+  }
+
+  public void addGenerator(Permutation<E> sigma) {
+    Queue<Permutation<E>> queue = Lists.newLinkedList();
+    queue.offer(sigma);
+    while (!queue.isEmpty()) {
+      queue.addAll(filter(queue.poll()));
+    }
   }
 
   private Set<Permutation<E>> filter(Permutation<E> alpha) {
@@ -109,54 +235,6 @@ final class CosetTables<E> extends ForwardingList<Collection<Permutation<E>>> {
     return ImmutableSet.of();
   }
 
-  @Override public CosetTables<E> subList(int fromIndex, int toIndex) {
-    return new CosetTables<E>(tables.subList(fromIndex, toIndex),
-        filters.subList(fromIndex, toIndex));
-  }
-
-  public boolean addAll(CosetTables<E> t2) {
-    return this.tables.addAll(t2.tables) && this.filters.addAll(t2.filters);
-  }
-
-  public boolean generates(Permutation<E> alpha) {
-    for (int i = 0; i < tables.size(); i++) {
-      if (Permutations.isIdentity(alpha)) {
-        return true;
-      }
-      Predicate<Permutation<E>> filter = filters.get(i);
-      Collection<Permutation<E>> table = tables.get(i);
-      Permutation<E> found = null;
-      for (Permutation<E> gamma : table) {
-        Permutation<E> p = gamma.inverse().compose(alpha);
-        if (filter.apply(p)) {
-          found = p;
-          break;
-        }
-      }
-      if (found == null)
-        return false;
-      alpha = found;
-    }
-    return true;
-  }
-
-  private transient Collection<Permutation<E>> generatedPermutations;
-
-  public Collection<Permutation<E>> generatedPermutations() {
-    if (generatedPermutations == null) {
-      Set<List<Permutation<E>>> factors = Sets.cartesianProduct(setTables());
-      return generatedPermutations =
-          Collections2.transform(factors,
-              new Function<List<Permutation<E>>, Permutation<E>>() {
-                @Override public Permutation<E>
-                    apply(List<Permutation<E>> input) {
-                  return Permutations.compose(input);
-                }
-              });
-    }
-    return generatedPermutations;
-  }
-
   private List<Set<Permutation<E>>> setTables() {
     ImmutableList.Builder<Set<Permutation<E>>> builder =
         ImmutableList.builder();
@@ -164,26 +242,5 @@ final class CosetTables<E> extends ForwardingList<Collection<Permutation<E>>> {
       builder.add(ImmutableSet.copyOf(table));
     }
     return builder.build();
-  }
-
-  public CosetTables<E> extend(Set<E> domain) {
-    return new CosetTables<E>(Lists.transform(tables,
-        CollectionMap.forFunction(DomainExtension.forDomain(domain))), filters);
-  }
-
-  boolean isValid() {
-    if (isEmpty())
-      return true;
-    Iterator<Permutation<E>> iterator = Iterables.concat(this).iterator();
-    Set<E> domain = iterator.next().domain();
-    boolean good = true;
-    while (good && iterator.hasNext()) {
-      good &= iterator.next().domain().equals(domain);
-    }
-    Iterator<Collection<Permutation<E>>> tableIterator = iterator();
-    while (good && tableIterator.hasNext()) {
-      good &= !tableIterator.next().isEmpty();
-    }
-    return good;
   }
 }

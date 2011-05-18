@@ -27,6 +27,7 @@ import math.algebra.permgroups.permutation.Permutations;
 public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
   public static <E> PermutationGroup<E> directProduct(
       Collection<PermutationGroup<E>> groups) {
+    checkArgument(!groups.isEmpty());
     Set<E> domain = Sets.newLinkedHashSet();
     List<Permutation<E>> generators = Lists.newArrayList();
     for (PermutationGroup<E> g : groups) {
@@ -36,7 +37,7 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     }
     domain = ImmutableSet.copyOf(domain);
     generators = Lists.transform(generators, DomainExtension.forDomain(domain));
-    CosetTables<E> tables2 = new CosetTables<E>();
+    CosetTables<E> tables2 = CosetTables.newMutableCosetTables();
     for (PermutationGroup<E> g : groups) {
       tables2.addAll(g.cosetTables.extend(domain));
     }
@@ -47,6 +48,28 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
   public static <E> PermutationGroup<E> directProduct(
       PermutationGroup<E>... groups) {
     return directProduct(Arrays.asList(groups));
+  }
+
+  public static <E> PermutationGroup<E> generatedBy(
+      Collection<PermutationGroup<E>> groups) {
+    checkArgument(!groups.isEmpty());
+    Iterator<PermutationGroup<E>> groupIterator = groups.iterator();
+    PermutationGroup<E> g1 = groupIterator.next();
+    ImmutableSet<E> domain = g1.domain();
+    List<Permutation<E>> generators = Lists.newArrayList(g1.generators());
+    while (groupIterator.hasNext()) {
+      PermutationGroup<E> h = groupIterator.next();
+      Set<E> theDomain = h.domain();
+      checkArgument(domain.equals(theDomain),
+          "Domain mismatch: expected domain %s in group %s", domain, theDomain);
+      generators.addAll(h.generators());
+    }
+    return generateGroup(domain, generators);
+  }
+
+  public static <E> PermutationGroup<E> generatedBy(
+      PermutationGroup<E>... groups) {
+    return generatedBy(Arrays.asList(groups));
   }
 
   public static <E> PermutationGroup<E> generateGroup(Set<E> domain,
@@ -127,24 +150,12 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     return super.equals(o);
   }
 
-  public Collection<Permutation<E>> generators() {
-    return generators;
-  }
-
   public PermutationGroup<E> extend(Set<E> newDomain) {
     return extend(ImmutableSet.copyOf(newDomain));
   }
 
-  private PermutationGroup<E> extend(ImmutableSet<E> newDomain) {
-    checkArgument(newDomain.containsAll(domain));
-    if (newDomain.size() == domain.size()) {
-      return this;
-    }
-    Collection<Permutation<E>> generators2 =
-        Collections2
-          .transform(generators, DomainExtension.forDomain(newDomain));
-    CosetTables<E> cosetTables2 = cosetTables.extend(newDomain);
-    return new PermutationGroup<E>(newDomain, generators2, cosetTables2);
+  public Collection<Permutation<E>> generators() {
+    return generators;
   }
 
   public Permutation<E> identity() {
@@ -184,5 +195,17 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     Joiner.on(", ").appendTo(builder, generators);
     builder.append('>');
     return builder.toString();
+  }
+
+  private PermutationGroup<E> extend(ImmutableSet<E> newDomain) {
+    checkArgument(newDomain.containsAll(domain));
+    if (newDomain.size() == domain.size()) {
+      return this;
+    }
+    Collection<Permutation<E>> generators2 =
+        Collections2
+          .transform(generators, DomainExtension.forDomain(newDomain));
+    CosetTables<E> cosetTables2 = cosetTables.extend(newDomain);
+    return new PermutationGroup<E>(newDomain, generators2, cosetTables2);
   }
 }
