@@ -2,6 +2,9 @@ package math.algebra.permgroups.permutation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.base.Function;
+import com.google.common.collect.MapMaker;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -31,7 +34,18 @@ public abstract class Permutation<E> {
     return (map == null) ? map = createAsMap() : map;
   }
 
-  abstract Map<E, E> createAsMap();
+  public Function<E, E> asFunction() {
+    return new Function<E, E>() {
+      @Override public E apply(E input) {
+        return image(input);
+      }
+    };
+  }
+
+  Map<E, E> createAsMap() {
+    return new MapMaker().initialCapacity(degree()).makeComputingMap(
+        asFunction());
+  }
 
   public Permutation<E> compose(Permutation<E> perm) {
     checkNotNull(perm);
