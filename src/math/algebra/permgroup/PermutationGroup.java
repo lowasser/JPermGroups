@@ -88,6 +88,10 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     return domain;
   }
 
+  public Collection<Permutation<E>> generators() {
+    return generators;
+  }
+
   public Permutation<E> identity() {
     return id;
   }
