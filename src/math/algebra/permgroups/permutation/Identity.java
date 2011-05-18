@@ -39,10 +39,12 @@ final class Identity<E> extends Permutation<E> {
   }
 
   @Override public E image(E e) {
+    checkArgument(domain.contains(e));
     return e;
   }
 
   @Override public E preimage(E e) {
+    checkArgument(domain.contains(e));
     return e;
   }
 

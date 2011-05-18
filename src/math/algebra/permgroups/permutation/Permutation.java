@@ -14,9 +14,7 @@ public abstract class Permutation<E> {
   Permutation() {
   }
 
-  public E image(E e) {
-    return asMap().get(e);
-  }
+  public abstract E image(E e);
 
   public E preimage(E e) {
     return inverse().image(e);

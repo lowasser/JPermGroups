@@ -1,5 +1,7 @@
 package math.algebra.permgroups.permutation;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.collect.Maps;
@@ -31,8 +33,12 @@ final class MutablePermutation<E> extends Permutation<E> {
     return permMap.keySet();
   }
 
+  @Override public E image(E e) {
+    checkArgument(permMap.containsKey(e));
+    return permMap.get(e);
+  }
+
   @Override Map<E, E> createAsMap() {
     return Collections.unmodifiableMap(permMap);
   }
-
 }

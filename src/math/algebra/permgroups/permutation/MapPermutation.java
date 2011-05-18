@@ -27,6 +27,11 @@ final class MapPermutation<E> extends Permutation<E> {
     return permMap.keySet();
   }
 
+  @Override public E image(E e) {
+    checkArgument(permMap.containsKey(e));
+    return permMap.get(e);
+  }
+
   @Override Function<E, E> createAsFunction() {
     return Functions.forMap(permMap);
   }
