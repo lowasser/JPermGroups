@@ -1,8 +1,10 @@
 package math.algebra.permgroup;
+
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -23,17 +25,23 @@ import math.algebra.permgroups.permutation.Permutation;
 import math.algebra.permgroups.permutation.Permutations;
 
 public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
-
   public static <E> PermutationGroup<E> directProduct(
       Collection<PermutationGroup<E>> groups) {
-    Set<E> domain = Sets.newHashSet();
+    Set<E> domain = Sets.newLinkedHashSet();
     List<Permutation<E>> generators = Lists.newArrayList();
     for (PermutationGroup<E> g : groups) {
       checkArgument(Collections.disjoint(g.domain(), domain));
       domain.addAll(g.domain());
       generators.addAll(g.generators());
     }
-    return generateGroup(domain, generators);
+    domain = ImmutableSet.copyOf(domain);
+    generators = Lists.transform(generators, DomainExtension.forDomain(domain));
+    CosetTables<E> tables2 = new CosetTables<E>();
+    for (PermutationGroup<E> g : groups) {
+      tables2.addAll(g.cosetTables.extend(domain));
+    }
+    return new PermutationGroup<E>(domain, generators,
+        CosetTables.immutable(tables2));
   }
 
   public static <E> PermutationGroup<E> directProduct(
@@ -50,10 +58,11 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
       Permutation<E>... generators) {
     return generateGroup(domain, Arrays.asList(generators));
   }
+
   private static <E> List<Predicate<Permutation<E>>>
       basicFilters(Set<E> domain) {
-    ImmutableList.Builder<Predicate<Permutation<E>>> builder = ImmutableList
-      .builder();
+    ImmutableList.Builder<Predicate<Permutation<E>>> builder =
+        ImmutableList.builder();
     for (final E e : domain) {
       builder.add(new Predicate<Permutation<E>>() {
         @Override public boolean apply(Permutation<E> input) {
@@ -63,19 +72,20 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     }
     return builder.build();
   }
+
   private final Permutation<E> id;
   private final CosetTables<E> cosetTables;
 
   private final ImmutableSet<E> domain;
 
-  private final ImmutableList<Permutation<E>> generators;
+  private final Collection<Permutation<E>> generators;
 
   private PermutationGroup(ImmutableSet<E> domain, CosetTables<E> cosetTables) {
     this.domain = ImmutableSet.copyOf(domain);
     this.id = Permutations.identity(domain);
     this.cosetTables = cosetTables;
-    this.generators = ImmutableSet.copyOf(Iterables.concat(cosetTables))
-      .asList();
+    this.generators =
+        ImmutableSet.copyOf(Iterables.concat(cosetTables)).asList();
   }
 
   private PermutationGroup(Set<E> domain, Collection<Permutation<E>> generators) {
@@ -121,6 +131,22 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     return generators;
   }
 
+  public PermutationGroup<E> extend(Set<E> newDomain) {
+    return extend(ImmutableSet.copyOf(newDomain));
+  }
+
+  private PermutationGroup<E> extend(ImmutableSet<E> newDomain) {
+    checkArgument(newDomain.containsAll(domain));
+    if (newDomain.size() == domain.size()) {
+      return this;
+    }
+    Collection<Permutation<E>> generators2 =
+        Collections2
+          .transform(generators, DomainExtension.forDomain(newDomain));
+    CosetTables<E> cosetTables2 = cosetTables.extend(newDomain);
+    return new PermutationGroup<E>(newDomain, generators2, cosetTables2);
+  }
+
   public Permutation<E> identity() {
     return id;
   }
@@ -142,12 +168,12 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
   }
 
   public PermutationGroup<E> subgroup(Predicate<Permutation<E>> filter) {
-    List<Predicate<Permutation<E>>> filters2 = Lists
-      .newArrayListWithCapacity(cosetTables.size() + 1);
+    List<Predicate<Permutation<E>>> filters2 =
+        Lists.newArrayListWithCapacity(cosetTables.size() + 1);
     filters2.add(filter);
     filters2.addAll(cosetTables.filters);
-    CosetTables<E> cosetTables2 = CosetTables.build(domain, generators,
-        filters2);
+    CosetTables<E> cosetTables2 =
+        CosetTables.build(domain, generators, filters2);
     return new PermutationGroup<E>(domain, cosetTables2.subList(1,
         cosetTables2.size()));
   }

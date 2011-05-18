@@ -157,7 +157,7 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
       Map<Partition, Partition> induced =
           Maps.newHashMapWithExpectedSize(domain().size());
       Iterator<E> domainIterator = domain().iterator();
-      while (domainIterator.hasNext() && good) {
+      while (good && domainIterator.hasNext()) {
         E e = domainIterator.next();
         Partition p = partition.get(e);
         Partition p2 = partition.get(sigma.image(e));
