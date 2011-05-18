@@ -1,6 +1,7 @@
 package math.algebra.permgroups.permutation;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import algorithms.Pair;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -99,5 +100,9 @@ public final class Permutations {
       }
     }
     return true;
+  }
+
+  public static <E> Permutation<Pair<E, E>> pairAction(Permutation<E> sigma) {
+    return new PairPermutation<E>(sigma);
   }
 }
