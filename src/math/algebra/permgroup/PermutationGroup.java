@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -52,7 +53,7 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
 
   public static <E> PermutationGroup<E> generatedBy(
       Collection<PermutationGroup<E>> groups) {
-    checkArgument(!groups.isEmpty());
+    checkArgument(!groups.isEmpty(), "Cannot determine the domain of the group");
     Iterator<PermutationGroup<E>> groupIterator = groups.iterator();
     PermutationGroup<E> g1 = groupIterator.next();
     ImmutableSet<E> domain = g1.domain();
@@ -80,6 +81,24 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
   public static <E> PermutationGroup<E> generateGroup(Set<E> domain,
       Permutation<E>... generators) {
     return generateGroup(domain, Arrays.asList(generators));
+  }
+
+  public static <E> PermutationGroup<E> intersection(
+      Collection<PermutationGroup<E>> groups) {
+    checkArgument(!groups.isEmpty(), "Cannot determine the domain of the group");
+    Iterator<PermutationGroup<E>> groupIterator = groups.iterator();
+    PermutationGroup<E> g = groupIterator.next();
+    List<Predicate<Permutation<E>>> filters =
+        Lists.newArrayListWithCapacity(groups.size());
+    while (groupIterator.hasNext()) {
+      filters.add(Predicates.in(groupIterator.next()));
+    }
+    return g.subgroup(filters);
+  }
+
+  public static <E> PermutationGroup<E> intersection(
+      PermutationGroup<E>... groups) {
+    return intersection(Arrays.asList(groups));
   }
 
   private static <E> List<Predicate<Permutation<E>>>
@@ -178,15 +197,17 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     return cosetTables.generatedPermutations().size();
   }
 
-  public PermutationGroup<E> subgroup(Predicate<Permutation<E>> filter) {
-    List<Predicate<Permutation<E>>> filters2 =
-        Lists.newArrayListWithCapacity(cosetTables.size() + 1);
-    filters2.add(filter);
+  public PermutationGroup<E> subgroup(List<Predicate<Permutation<E>>> filters) {
+    List<Predicate<Permutation<E>>> filters2 = Lists.newArrayList(filters);
     filters2.addAll(cosetTables.filters);
     CosetTables<E> cosetTables2 =
         CosetTables.build(domain, generators, filters2);
-    return new PermutationGroup<E>(domain, cosetTables2.subList(1,
+    return new PermutationGroup<E>(domain, cosetTables2.subList(filters.size(),
         cosetTables2.size()));
+  }
+
+  public PermutationGroup<E> subgroup(Predicate<Permutation<E>> filter) {
+    return subgroup(Collections.singletonList(filter));
   }
 
   @Override public String toString() {
