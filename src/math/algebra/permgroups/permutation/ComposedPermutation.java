@@ -4,10 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 
-import java.util.Map;
 import java.util.Set;
 
 final class ComposedPermutation<E> extends Permutation<E> {
