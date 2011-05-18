@@ -18,22 +18,23 @@ public final class Permutations {
 
   public static <E> Permutation<E> compose(Permutation<E> p,
       Permutation<E>... perms) {
+    p = new MutablePermutation<E>(p);
     for (Permutation<E> q : perms) {
-      p = new ComposedPermutation<E>(p, q);
+      p = p.compose(q);
     }
     return new MapPermutation<E>(p);
   }
-  
-  public static <E> Permutation<E> extend(Permutation<E> sigma, Set<E> domain){
+
+  public static <E> Permutation<E> extend(Permutation<E> sigma, Set<E> domain) {
     return new ExtendedPermutation<E>(domain, sigma);
   }
 
   public static <E> Permutation<E> compose(Iterable<Permutation<E>> perms) {
     Iterator<Permutation<E>> iter = perms.iterator();
     checkArgument(iter.hasNext());
-    Permutation<E> p = iter.next();
+    Permutation<E> p = new MutablePermutation<E>(iter.next());
     while (iter.hasNext()) {
-      p = new ComposedPermutation<E>(p, iter.next());
+      p = p.compose(iter.next());
     }
     return new MapPermutation<E>(p);
   }
