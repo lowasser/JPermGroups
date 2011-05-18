@@ -2,6 +2,7 @@ package math.algebra.permgroups.permutation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -70,5 +71,22 @@ public final class Permutations {
       map.put(cycle.get(k - 1), write);
     }
     return new MapPermutation<E>(map);
+  }
+
+  public static <E1, E2> Permutation<E2> induced(Permutation<E1> sigma,
+      Function<E1, E2> f) {
+    Map<E2, E2> map = Maps.newHashMap();
+    for (E1 e1 : sigma.domain()) {
+      E2 e2 = f.apply(e1);
+      E1 e1I = sigma.image(e1);
+      E2 e2I = f.apply(e1I);
+      if (map.containsKey(e2)) {
+        checkArgument(e2I.equals(map.get(e2)),
+            "Function does not induce a bijective mapping");
+      } else {
+        map.put(e2, e2I);
+      }
+    }
+    return permutation(map);
   }
 }
