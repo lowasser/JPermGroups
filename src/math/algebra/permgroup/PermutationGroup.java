@@ -15,6 +15,7 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
 import java.util.AbstractSet;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -38,6 +39,10 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     this.cosetTables = cosetTables;
     id = Permutations.identity(domain);
     groupMembers = constructGroupMembers();
+  }
+
+  public PermutationGroup(Set<E> domain, Permutation<E>... generators) {
+    this(domain, Arrays.asList(generators));
   }
 
   public PermutationGroup(Set<E> domain, Collection<Permutation<E>> generators) {
