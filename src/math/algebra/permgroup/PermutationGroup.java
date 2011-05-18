@@ -131,8 +131,7 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
 
   private ImmutableSetMultimap<E, Permutation<E>> constructCosetTables(
       Collection<Permutation<E>> generators) {
-    SetMultimap<E, Permutation<E>> cTables = HashMultimap.create(degree(),
-        10);
+    SetMultimap<E, Permutation<E>> cTables = HashMultimap.create(degree(), 10);
     for (E e : domain) {
       cTables.put(e, id);
     }
@@ -226,6 +225,18 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
       }
     }
     return Collections.unmodifiableSet(orbit);
+  }
+
+  public Collection<Set<E>> orbits() {
+    Set<E> left = Sets.newLinkedHashSet(domain);
+    List<Set<E>> orbits = Lists.newArrayList();
+    while (!left.isEmpty()) {
+      E e = left.iterator().next();
+      Set<E> orbit = orbit(e);
+      orbits.add(orbit);
+      left.removeAll(orbits);
+    }
+    return orbits;
   }
 
   public boolean isTransitive() {
