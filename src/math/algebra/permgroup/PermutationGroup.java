@@ -1,4 +1,5 @@
 package math.algebra.permgroup;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
@@ -6,10 +7,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +24,23 @@ import math.algebra.permgroups.permutation.Permutations;
 
 public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
 
+  public static <E> PermutationGroup<E> directProduct(
+      Collection<PermutationGroup<E>> groups) {
+    Set<E> domain = Sets.newHashSet();
+    List<Permutation<E>> generators = Lists.newArrayList();
+    for (PermutationGroup<E> g : groups) {
+      checkArgument(Collections.disjoint(g.domain(), domain));
+      domain.addAll(g.domain());
+      generators.addAll(g.generators());
+    }
+    return generateGroup(domain, generators);
+  }
+
+  public static <E> PermutationGroup<E> directProduct(
+      PermutationGroup<E>... groups) {
+    return directProduct(Arrays.asList(groups));
+  }
+
   public static <E> PermutationGroup<E> generateGroup(Set<E> domain,
       Collection<Permutation<E>> generators) {
     return new PermutationGroup<E>(domain, generators);
@@ -30,7 +50,6 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
       Permutation<E>... generators) {
     return generateGroup(domain, Arrays.asList(generators));
   }
-
   private static <E> List<Predicate<Permutation<E>>>
       basicFilters(Set<E> domain) {
     ImmutableList.Builder<Predicate<Permutation<E>>> builder = ImmutableList
@@ -44,11 +63,20 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     }
     return builder.build();
   }
-
   private final Permutation<E> id;
   private final CosetTables<E> cosetTables;
+
   private final ImmutableSet<E> domain;
+
   private final ImmutableList<Permutation<E>> generators;
+
+  private PermutationGroup(ImmutableSet<E> domain, CosetTables<E> cosetTables) {
+    this.domain = ImmutableSet.copyOf(domain);
+    this.id = Permutations.identity(domain);
+    this.cosetTables = cosetTables;
+    this.generators = ImmutableSet.copyOf(Iterables.concat(cosetTables))
+      .asList();
+  }
 
   private PermutationGroup(Set<E> domain, Collection<Permutation<E>> generators) {
     this(domain, generators, CosetTables.build(domain, generators,
@@ -61,14 +89,6 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     this.generators = ImmutableList.copyOf(generators);
     this.id = Permutations.identity(domain);
     this.cosetTables = cosetTables;
-  }
-
-  private PermutationGroup(ImmutableSet<E> domain, CosetTables<E> cosetTables) {
-    this.domain = ImmutableSet.copyOf(domain);
-    this.id = Permutations.identity(domain);
-    this.cosetTables = cosetTables;
-    this.generators = ImmutableSet.copyOf(Iterables.concat(cosetTables))
-      .asList();
   }
 
   @Override public boolean contains(@Nullable Object o) {
@@ -88,6 +108,15 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     return domain;
   }
 
+  @Override public boolean equals(Object o) {
+    if (o instanceof PermutationGroup) {
+      @SuppressWarnings("unchecked")
+      PermutationGroup<E> g = (PermutationGroup) o;
+      return size() == g.size() && g.containsAll(generators);
+    }
+    return super.equals(o);
+  }
+
   public Collection<Permutation<E>> generators() {
     return generators;
   }
@@ -100,33 +129,16 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     return false;
   }
 
+  public boolean isSubgroupOf(PermutationGroup<E> g) {
+    return size() <= g.size() && g.containsAll(generators);
+  }
+
   @Override public Iterator<Permutation<E>> iterator() {
     return cosetTables.generatedPermutations().iterator();
   }
 
   @Override public int size() {
     return cosetTables.generatedPermutations().size();
-  }
-
-  @Override public String toString() {
-    StringBuilder builder = new StringBuilder(generators.size() * 10);
-    builder.append('<');
-    Joiner.on(", ").appendTo(builder, generators);
-    builder.append('>');
-    return builder.toString();
-  }
-
-  public boolean isSubgroupOf(PermutationGroup<E> g) {
-    return size() <= g.size() && g.containsAll(generators);
-  }
-
-  @Override public boolean equals(Object o) {
-    if (o instanceof PermutationGroup) {
-      @SuppressWarnings("unchecked")
-      PermutationGroup<E> g = (PermutationGroup) o;
-      return size() == g.size() && g.containsAll(generators);
-    }
-    return super.equals(o);
   }
 
   public PermutationGroup<E> subgroup(Predicate<Permutation<E>> filter) {
@@ -138,5 +150,13 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
         filters2);
     return new PermutationGroup<E>(domain, cosetTables2.subList(1,
         cosetTables2.size()));
+  }
+
+  @Override public String toString() {
+    StringBuilder builder = new StringBuilder(generators.size() * 10);
+    builder.append('<');
+    Joiner.on(", ").appendTo(builder, generators);
+    builder.append('>');
+    return builder.toString();
   }
 }
