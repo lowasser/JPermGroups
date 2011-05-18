@@ -1,5 +1,6 @@
 package math.algebra.permgroup;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -59,5 +60,19 @@ public class PermutationGroupTests extends TestCase {
     assertFalse(group2.isSubgroupOf(group1));
     assertFalse(group1.isSubgroupOf(group2));
     assertFalse(group12.isSubgroupOf(group1));
+  }
+
+  public void testSubgroupPredicate() {
+    PermutationGroup<Integer> group1 = PermutationGroup.generateGroup(domainP,
+        p1);
+    PermutationGroup<Integer> group12 = PermutationGroup.generateGroup(domainP,
+        p1, p2);
+    Predicate<Permutation<Integer>> stabilizes3 = new Predicate<Permutation<Integer>>() {
+
+      @Override public boolean apply(Permutation<Integer> input) {
+        return Permutations.stabilizes(input, 3);
+      }
+    };
+    assertEquals(group1, group12.subgroup(stabilizes3));
   }
 }

@@ -52,7 +52,7 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
 
   private final ImmutableSet<E> domain;
   private final Permutation<E> id;
-  private List<Set<Permutation<E>>> cosetTables;
+  private final List<Set<Permutation<E>>> cosetTables;
   private List<Predicate<Permutation<E>>> constraints;
 
   private final Collection<Permutation<E>> groupMembers;
@@ -94,7 +94,7 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
         }
       });
     }
-    constructCosetTables(generators);
+    cosetTables = constructCosetTables(generators, constraints);
     groupMembers = constructGroupMembers();
   }
 
@@ -199,24 +199,26 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     return partition;
   }
 
-  private void constructCosetTables(Collection<Permutation<E>> generators) {
-    cosetTables = Lists.newArrayList();
-    for (int i = 0; i < constraints.size(); i++) {
+  private List<Set<Permutation<E>>> constructCosetTables(
+      Collection<Permutation<E>> generators,
+      List<Predicate<Permutation<E>>> predicates) {
+    List<Set<Permutation<E>>> cTables = Lists.newArrayList();
+    for (int i = 0; i < predicates.size(); i++) {
       Set<Permutation<E>> table = Sets.newLinkedHashSet();
       table.add(id);
-      cosetTables.add(table);
+      cTables.add(table);
     }
     Set<Permutation<E>> todos = Sets.newLinkedHashSet(generators);
     while (!todos.isEmpty()) {
       Iterator<Permutation<E>> iterator = todos.iterator();
       Permutation<E> alpha = iterator.next();
       iterator.remove();
-      todos.addAll(filter(alpha));
+      todos.addAll(filter(cTables, predicates, alpha));
     }
-    for (int i = 0; i < cosetTables.size(); i++) {
-      cosetTables.set(i, ImmutableSet.copyOf(cosetTables.get(i)));
+    for (int i = 0; i < cTables.size(); i++) {
+      cTables.set(i, ImmutableSet.copyOf(cTables.get(i)));
     }
-    cosetTables = ImmutableList.copyOf(cosetTables);
+    return ImmutableList.copyOf(cTables);
   }
 
   private Collection<Permutation<E>> constructGroupMembers() {
@@ -251,15 +253,15 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     return id.equals(alpha);
   }
 
-  private Set<Permutation<E>> filter(Permutation<E> alpha) {
-
-    for (int i = 0; i < constraints.size(); i++) {
+  private Set<Permutation<E>> filter(List<Set<Permutation<E>>> cTables,
+      List<Predicate<Permutation<E>>> predicates, Permutation<E> alpha) {
+    for (int i = 0; i < predicates.size(); i++) {
       if (id.equals(alpha)) {
         return ImmutableSet.of();
       }
-      Predicate<Permutation<E>> constraint = constraints.get(i);
+      Predicate<Permutation<E>> constraint = predicates.get(i);
       Permutation<E> found = null;
-      Set<Permutation<E>> table = cosetTables.get(i);
+      Set<Permutation<E>> table = cTables.get(i);
       for (Permutation<E> gamma : table) {
         Permutation<E> p = gamma.inverse().compose(alpha);
         if (constraint.apply(p)) {
@@ -269,27 +271,46 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
       }
       if (found == null) {
         table.add(alpha);
-        return newFilters(alpha, i);
+        return newFilters(cTables, alpha, i);
       }
       alpha = found;
     }
     return ImmutableSet.of();
   }
 
-  private Set<Permutation<E>> newFilters(Permutation<E> alpha, int index) {
+  private Set<Permutation<E>> newFilters(List<Set<Permutation<E>>> cTables,
+      Permutation<E> alpha, int index) {
     List<E> omega = domain.asList();
     Set<Permutation<E>> filters = Sets.newHashSet();
     for (int i = 0; i <= index; i++) {
-      for (Permutation<E> p : cosetTables.get(i)) {
+      for (Permutation<E> p : cTables.get(i)) {
         filters.add(p.compose(alpha));
       }
     }
     for (int i = index + 1; i < omega.size(); i++) {
-      for (Permutation<E> p : cosetTables.get(i)) {
+      for (Permutation<E> p : cTables.get(i)) {
         filters.add(alpha.compose(p));
       }
     }
     filters.remove(alpha);
     return filters;
+  }
+
+  public PermutationGroup<E> subgroup(Predicate<Permutation<E>> predicate) {
+    List<Predicate<Permutation<E>>> predicates = Lists.newArrayList();
+    predicates.add(predicate);
+    for (final E e : domain) {
+      predicates.add(new Predicate<Permutation<E>>() {
+        @Override public boolean apply(Permutation<E> input) {
+          return Permutations.stabilizes(input, e);
+        }
+      });
+    }
+    List<Set<Permutation<E>>> cosetTables2 = constructCosetTables(generators,
+        predicates);
+    predicates = predicates.subList(1, predicates.size());
+    cosetTables2 = cosetTables2.subList(1, cosetTables2.size());
+
+    return new PermutationGroup<E>(domain, cosetTables2, predicates);
   }
 }
