@@ -3,6 +3,7 @@ package math.algebra.permgroups.permutation;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.Function;
+import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -88,5 +89,14 @@ public final class Permutations {
       }
     }
     return permutation(map);
+  }
+
+  public static <E> boolean isIdentity(Permutation<E> sigma) {
+    for (E e : sigma.domain()) {
+      if (!Objects.equal(e, sigma.image(e))) {
+        return false;
+      }
+    }
+    return true;
   }
 }
