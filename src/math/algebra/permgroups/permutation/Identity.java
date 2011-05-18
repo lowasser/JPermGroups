@@ -44,7 +44,7 @@ final class Identity<E> extends Permutation<E> {
     return e;
   }
 
-  @Override Permutation<E> createInverse() {
+  @Override public Permutation<E> inverse() {
     return this;
   }
 }

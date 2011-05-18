@@ -33,7 +33,13 @@ public abstract class Permutation<E> {
     return (map == null) ? map = createAsMap() : map;
   }
 
+  private transient Function<E,E> function = null;
+  
   public Function<E, E> asFunction() {
+    return (function == null) ? function = createAsFunction():function;
+  }
+
+  Function<E, E> createAsFunction() {
     return new Function<E, E>() {
       @Override public E apply(E input) {
         return image(input);

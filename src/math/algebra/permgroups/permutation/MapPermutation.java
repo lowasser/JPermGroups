@@ -3,6 +3,8 @@ package math.algebra.permgroups.permutation;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableBiMap;
 
 import java.util.Map;
@@ -21,15 +23,19 @@ final class MapPermutation<E> extends Permutation<E> {
     this(checkNotNull(permutation).asMap());
   }
 
-  @Override Permutation<E> createInverse() {
-    return new MapPermutation<E>(permMap.inverse());
+  @Override public Set<E> domain() {
+    return permMap.keySet();
+  }
+
+  @Override Function<E, E> createAsFunction() {
+    return Functions.forMap(permMap);
   }
 
   @Override Map<E, E> createAsMap() {
     return permMap;
   }
 
-  @Override public Set<E> domain() {
-    return permMap.keySet();
+  @Override Permutation<E> createInverse() {
+    return new MapPermutation<E>(permMap.inverse());
   }
 }
