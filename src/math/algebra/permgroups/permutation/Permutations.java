@@ -25,7 +25,7 @@ public final class Permutations {
   }
   
   public static <E> Permutation<E> extend(Permutation<E> sigma, Set<E> domain){
-    return ExtendedPermutation.extend(domain, sigma);
+    return new ExtendedPermutation<E>(domain, sigma);
   }
 
   public static <E> Permutation<E> compose(Iterable<Permutation<E>> perms) {

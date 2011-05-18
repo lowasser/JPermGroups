@@ -16,11 +16,7 @@ final class ExtendedPermutation<E> extends Permutation<E> {
     return new ExtendedPermutation<E>(domain, sigma.inverse());
   }
 
-  static <E> Permutation<E> extend(Set<E> domain, Permutation<E> sigma){
-    return new ExtendedPermutation<E>(domain, sigma);
-  }
-  
-  private ExtendedPermutation(Set<E> domain, Permutation<E> sigma) {
+  ExtendedPermutation(Set<E> domain, Permutation<E> sigma) {
     this.domain = checkNotNull(domain);
     this.sigma = checkNotNull(sigma);
     assert domain.containsAll(sigma.domain());
