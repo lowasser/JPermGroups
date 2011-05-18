@@ -11,21 +11,34 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
 import java.util.AbstractSet;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 import math.algebra.permgroups.permutation.Permutation;
 import math.algebra.permgroups.permutation.Permutations;
 
 public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
+  public static <E> PermutationGroup<E> generateGroup(Set<E> domain,
+      Collection<Permutation<E>> generators) {
+    return new PermutationGroup<E>(domain, generators);
+  }
+
+  public static <E> PermutationGroup<E> generateGroup(Set<E> domain,
+      Permutation<E>... generators) {
+    return generateGroup(domain, Arrays.asList(generators));
+  }
+
   private final ImmutableSet<E> domain;
   private final Permutation<E> id;
   private final ImmutableSetMultimap<E, Permutation<E>> cosetTables;
@@ -41,11 +54,8 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     groupMembers = constructGroupMembers();
   }
 
-  public PermutationGroup(Set<E> domain, Permutation<E>... generators) {
-    this(domain, Arrays.asList(generators));
-  }
-
-  public PermutationGroup(Set<E> domain, Collection<Permutation<E>> generators) {
+  private PermutationGroup(Set<E> domain, Collection<Permutation<E>> generators) {
+    checkArgument(!domain.isEmpty());
     this.generators = ImmutableList.copyOf(generators);
     this.domain = ImmutableSet.copyOf(domain);
     for (Permutation<E> g : generators) {
@@ -121,7 +131,7 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
 
   private ImmutableSetMultimap<E, Permutation<E>> constructCosetTables(
       Collection<Permutation<E>> generators) {
-    SetMultimap<E, Permutation<E>> cTables = HashMultimap.create(domain.size(),
+    SetMultimap<E, Permutation<E>> cTables = HashMultimap.create(degree(),
         10);
     for (E e : domain) {
       cTables.put(e, id);
@@ -200,5 +210,30 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
       return size() == h.size() && isSubgroupOf(h);
     }
     return super.equals(o);
+  }
+
+  public Set<E> orbit(E e) {
+    Set<E> orbit = Sets.newHashSet();
+    Queue<E> queue = Lists.newLinkedList();
+    queue.add(e);
+    while (!queue.isEmpty()) {
+      e = queue.poll();
+      for (Permutation<E> g : generators) {
+        E img = g.image(e);
+        if (orbit.add(img)) {
+          queue.add(img);
+        }
+      }
+    }
+    return Collections.unmodifiableSet(orbit);
+  }
+
+  public boolean isTransitive() {
+    E e = domain.iterator().next();
+    return orbit(e).size() == degree();
+  }
+
+  public int degree() {
+    return domain.size();
   }
 }

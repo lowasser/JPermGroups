@@ -19,7 +19,7 @@ public class PermutationGroupTests extends TestCase {
     .of(1, 3, 3, 1, 2, 2, 4, 4));
 
   public void testCyclicGroup1() {
-    PermutationGroup<Integer> group1 = new PermutationGroup<Integer>(domainP,
+    PermutationGroup<Integer> group1 = PermutationGroup.generateGroup(domainP,
         p1);
     assertEquals(2, group1.size());
     assertTrue(group1.contains(Permutations.identity(domainP)));
@@ -28,7 +28,7 @@ public class PermutationGroupTests extends TestCase {
   }
 
   public void testCyclicGroup2() {
-    PermutationGroup<Integer> group2 = new PermutationGroup<Integer>(domainP,
+    PermutationGroup<Integer> group2 = PermutationGroup.generateGroup(domainP,
         p2);
     assertEquals(3, group2.size());
     assertTrue(group2.contains(Permutations.identity(domainP)));
@@ -36,13 +36,28 @@ public class PermutationGroupTests extends TestCase {
     assertTrue(group2.contains(p2));
   }
 
-  public void testCyclicGroup12() {
-    PermutationGroup<Integer> group12 = new PermutationGroup<Integer>(domainP,
+  public void testGroup12() {
+    PermutationGroup<Integer> group12 = PermutationGroup.generateGroup(domainP,
         p1, p2);
     assertEquals(6, group12.size());
     assertTrue(group12.contains(Permutations.identity(domainP)));
     assertTrue(group12.contains(p1));
     assertTrue(group12.contains(p2));
     assertTrue(group12.contains(p3));
+  }
+
+  public void testSubgroup() {
+    PermutationGroup<Integer> group1 = PermutationGroup.generateGroup(domainP,
+        p1);
+    PermutationGroup<Integer> group2 = PermutationGroup.generateGroup(domainP,
+        p2);
+    PermutationGroup<Integer> group12 = PermutationGroup.generateGroup(domainP,
+        p1, p2);
+    assertTrue(group1.isSubgroupOf(group12));
+    assertTrue(group2.isSubgroupOf(group12));
+    assertTrue(group12.isSubgroupOf(group12));
+    assertFalse(group2.isSubgroupOf(group1));
+    assertFalse(group1.isSubgroupOf(group2));
+    assertFalse(group12.isSubgroupOf(group1));
   }
 }
