@@ -1,26 +1,39 @@
 package math.algebra.permgroups.permutation;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.base.Function;
+import com.google.common.base.Functions;
+import com.google.common.collect.ImmutableSet;
 
-import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
 final class Identity<E> extends Permutation<E> {
-  private final ImmutableMap<E, E> map;
+  private final Set<E> domain;
 
   Identity(Set<E> domain) {
-    Map<E, E> tmp = Maps.newHashMapWithExpectedSize(domain.size());
-    for (E e : domain) {
-      tmp.put(e, e);
-    }
-    this.map = ImmutableMap.copyOf(tmp);
+    this.domain = ImmutableSet.copyOf(domain);
   }
 
-  @Override Map<E, E> createAsMap() {
-    return map;
+  @Override public Function<E, E> asFunction() {
+    return Functions.identity();
+  }
+
+  @Override public Permutation<E> compose(Permutation<E> perm) {
+    return perm;
+  }
+
+  @Override public Set<E> domain() {
+    return domain;
+  }
+
+  @Override public boolean equals(@Nullable Object obj) {
+    if (obj == this) {
+      return true;
+    } else if (obj instanceof Identity) {
+      return domain().equals(((Permutation) obj).domain());
+    }
+    return super.equals(obj);
   }
 
   @Override public E image(E e) {
@@ -31,20 +44,7 @@ final class Identity<E> extends Permutation<E> {
     return e;
   }
 
-  @Override public Permutation<E> compose(Permutation<E> perm) {
-    return perm;
-  }
-
   @Override Permutation<E> createInverse() {
     return this;
-  }
-
-  @Override public boolean equals(@Nullable Object obj) {
-    if (obj == this) {
-      return true;
-    } else if (obj instanceof Identity) {
-      return domain().equals(((Permutation) obj).domain());
-    }
-    return super.equals(obj);
   }
 }

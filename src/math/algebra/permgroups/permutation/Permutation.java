@@ -1,9 +1,10 @@
 package math.algebra.permgroups.permutation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import algorithms.FunctionMap;
 
 import com.google.common.base.Function;
-import com.google.common.collect.MapMaker;
+import com.google.common.base.Objects;
 
 import java.util.Map;
 import java.util.Set;
@@ -20,9 +21,7 @@ public abstract class Permutation<E> {
     return inverse().image(e);
   }
 
-  public Set<E> domain() {
-    return asMap().keySet();
-  }
+  public abstract Set<E> domain();
 
   public final int degree() {
     return domain().size();
@@ -43,8 +42,7 @@ public abstract class Permutation<E> {
   }
 
   Map<E, E> createAsMap() {
-    return new MapMaker().initialCapacity(degree()).makeComputingMap(
-        asFunction());
+    return new FunctionMap<E, E>(domain(), asFunction());
   }
 
   public Permutation<E> compose(Permutation<E> perm) {
@@ -72,12 +70,17 @@ public abstract class Permutation<E> {
     return asMap().hashCode();
   }
 
-  @Override public boolean equals(Object obj) {
+  @SuppressWarnings("unchecked") @Override public boolean equals(Object obj) {
     if (obj == this) {
       return true;
     } else if (obj instanceof Permutation) {
       Permutation p = (Permutation) obj;
-      return asMap().equals(p.asMap());
+      if (!domain().equals(p.domain()))
+        return false;
+      for (E e : domain())
+        if (!Objects.equal(image(e), p.image(e)))
+          return false;
+      return true;
     }
     return false;
   }
