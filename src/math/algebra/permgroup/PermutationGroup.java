@@ -85,13 +85,21 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
 
   public static <E> PermutationGroup<E> intersection(
       Collection<PermutationGroup<E>> groups) {
-    checkArgument(!groups.isEmpty(), "Cannot determine the domain of the group");
-    Iterator<PermutationGroup<E>> groupIterator = groups.iterator();
-    PermutationGroup<E> g = groupIterator.next();
+    checkArgument(!groups.isEmpty());
+    List<PermutationGroup<E>> theGroups = Lists.newArrayList(groups);
+    int minSize = Integer.MAX_VALUE;
+    int bestIndex = -1;
+    for (int i = 0; i < theGroups.size(); i++) {
+      if (theGroups.get(i).size() < minSize) {
+        bestIndex = i;
+        minSize = theGroups.get(i).size();
+      }
+    }
+    PermutationGroup<E> g = theGroups.remove(bestIndex);
     List<Predicate<Permutation<E>>> filters =
-        Lists.newArrayListWithCapacity(groups.size());
-    while (groupIterator.hasNext()) {
-      filters.add(Predicates.in(groupIterator.next()));
+        Lists.newArrayListWithCapacity(theGroups.size());
+    for (PermutationGroup<E> h : theGroups) {
+      filters.add(Predicates.in(h));
     }
     return g.subgroup(filters);
   }
@@ -198,6 +206,9 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
   }
 
   public PermutationGroup<E> subgroup(List<Predicate<Permutation<E>>> filters) {
+    if (filters.isEmpty()) {
+      return this;
+    }
     List<Predicate<Permutation<E>>> filters2 = Lists.newArrayList(filters);
     filters2.addAll(cosetTables.filters);
     CosetTables<E> cosetTables2 =
