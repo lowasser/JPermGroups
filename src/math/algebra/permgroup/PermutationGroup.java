@@ -51,6 +51,11 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     return directProduct(Arrays.asList(groups));
   }
 
+  public static <E> PermutationGroup<E> trivial(Set<E> domain) {
+    return new PermutationGroup<E>(domain, ImmutableList.<Permutation<E>> of(),
+        CosetTables.trivial(domain));
+  }
+
   public static <E> PermutationGroup<E> generatedBy(
       Collection<PermutationGroup<E>> groups) {
     checkArgument(!groups.isEmpty(), "Cannot determine the domain of the group");
@@ -179,6 +184,19 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
 
   public PermutationGroup<E> extend(Set<E> newDomain) {
     return extend(ImmutableSet.copyOf(newDomain));
+  }
+
+  public PermutationGroup<E> extend(Collection<Permutation<E>> newGenerators) {
+    List<Permutation<E>> newGs = Lists.newArrayList();
+    for (Permutation<E> g : newGenerators) {
+      if (!contains(g))
+        newGs.add(g);
+    }
+    if (newGs.isEmpty()) {
+      return this;
+    }
+    newGs.addAll(generators);
+    return new PermutationGroup<E>(domain, newGs, cosetTables.extend(newGs));
   }
 
   public Collection<Permutation<E>> generators() {
