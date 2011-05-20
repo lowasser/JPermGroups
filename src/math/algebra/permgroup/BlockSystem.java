@@ -5,6 +5,7 @@ import algorithms.Pair;
 import algorithms.Partition;
 
 import com.google.common.base.Functions;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableBiMap;
@@ -16,6 +17,7 @@ import com.google.common.collect.SetMultimap;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -27,10 +29,23 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
   private final PermutationGroup<E> group;
   private transient SetMultimap<Partition, E> blocks = null;
   private final int nBlocks;
+  private transient PermutationGroup<E> stabilizingSubgroup = null;
 
   public static <E> BlockSystem<E>
       minimalBlockSystem(PermutationGroup<E> group) {
     return trivial(group).minimalSystem();
+  }
+
+  public PermutationGroup<E> stabilizingSubgroup() {
+    if (stabilizingSubgroup == null) {
+      List<Predicate<Permutation<E>>> constraints = Lists.newArrayList();
+      for (final Collection<E> block : blocks().asMap().values()) {
+        // block is actually a Set<E>
+        constraints.add(StabilizesPredicate.on((Set<E>) block));
+      }
+      return stabilizingSubgroup = group.subgroup(constraints);
+    }
+    return stabilizingSubgroup;
   }
 
   public static <E> BlockSystem<E> trivial(PermutationGroup<E> group) {
