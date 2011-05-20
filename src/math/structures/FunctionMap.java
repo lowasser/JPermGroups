@@ -32,10 +32,10 @@ public final class FunctionMap<K, V> extends AbstractMap<K, V> {
   }
 
   private final Set<K> keySet;
-  private final Function<K, V> function;
+  private final Function<? super K, V> function;
   private transient Integer hashCode = null;
 
-  public FunctionMap(Set<K> keySet, Function<K, V> function) {
+  public FunctionMap(Set<K> keySet, Function<? super K, V> function) {
     this.keySet = ImmutableSet.copyOf(keySet);
     this.function = checkNotNull(function);
   }
