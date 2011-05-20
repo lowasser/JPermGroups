@@ -1,14 +1,15 @@
 package math.algebra.permgroups.permutation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import algorithms.CartesianProduct;
-import algorithms.Pair;
 
 import com.google.common.base.Objects;
 
 import java.util.Set;
 
 import javax.annotation.Nullable;
+
+import math.structures.CartesianProduct;
+import math.structures.Pair;
 
 class DirectProductPermutation<A, B> extends Permutation<Pair<A, B>> {
   private final Permutation<A> sigmaA;

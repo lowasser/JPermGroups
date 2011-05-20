@@ -2,13 +2,14 @@ package math.algebra.permgroups.permutation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import algorithms.FunctionMap;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 
 import java.util.Map;
 import java.util.Set;
+
+import math.structures.FunctionMap;
 
 public abstract class Permutation<E> {
   public abstract E image(E e);

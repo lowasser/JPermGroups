@@ -1,8 +1,6 @@
 package math.algebra.permgroup;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import algorithms.CartesianProduct;
-import algorithms.Pair;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -18,6 +16,8 @@ import java.util.List;
 import java.util.Set;
 
 import math.algebra.permgroups.permutation.Permutation;
+import math.structures.CartesianProduct;
+import math.structures.Pair;
 
 public final class Groups {
   public static <E> PermutationGroup<E> trivial(Set<E> domain) {

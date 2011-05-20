@@ -1,7 +1,6 @@
 package math.algebra.permgroups.permutation;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import algorithms.Pair;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -12,6 +11,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import math.structures.Pair;
 
 public final class Permutations {
   private Permutations() {

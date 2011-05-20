@@ -1,8 +1,6 @@
 package math.algebra.permgroup;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import algorithms.Pair;
-import algorithms.Partition;
 
 import com.google.common.base.Functions;
 import com.google.common.base.Predicate;
@@ -23,6 +21,8 @@ import java.util.Queue;
 import java.util.Set;
 
 import math.algebra.permgroups.permutation.Permutation;
+import math.structures.Pair;
+import math.structures.Partition;
 
 final class BlockSystem<E> extends ForwardingMap<E, Object> {
   private final ImmutableMap<E, Partition> partition;

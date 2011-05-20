@@ -1,4 +1,4 @@
-package algorithms;
+package math.structures;
 
 public final class Partition {
   private Partition parent;

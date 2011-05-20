@@ -1,4 +1,4 @@
-package algorithms;
+package math.structures;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

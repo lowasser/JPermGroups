@@ -1,4 +1,4 @@
-package algorithms;
+package math.structures;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.AbstractIterator;

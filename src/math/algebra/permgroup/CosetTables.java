@@ -1,6 +1,5 @@
 package math.algebra.permgroup;
 
-import algorithms.Pair;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -22,6 +21,7 @@ import java.util.Set;
 
 import math.algebra.permgroups.permutation.Permutation;
 import math.algebra.permgroups.permutation.Permutations;
+import math.structures.Pair;
 
 final class CosetTables<E> extends ForwardingList<Collection<Permutation<E>>> {
   public static <E> CosetTables<E> trivial(Set<E> domain) {
