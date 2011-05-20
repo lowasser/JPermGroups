@@ -5,8 +5,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import junit.framework.TestCase;
-import math.algebra.permgroups.permutation.Permutation;
-import math.algebra.permgroups.permutation.Permutations;
+import math.permutation.Permutation;
+import math.permutation.Permutations;
 
 public class PermutationGroupTests extends TestCase {
   private final ImmutableSet<Integer> domainP = ImmutableSet.of(1, 2, 3, 4);

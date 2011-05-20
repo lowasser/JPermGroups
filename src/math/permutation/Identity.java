@@ -1,4 +1,4 @@
-package math.algebra.permgroups.permutation;
+package math.permutation;
 
 import static com.google.common.base.Preconditions.checkArgument;
 

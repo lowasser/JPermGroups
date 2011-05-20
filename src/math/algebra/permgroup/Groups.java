@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import math.algebra.permgroups.permutation.Permutation;
+import math.permutation.Permutation;
 import math.structures.CartesianProduct;
 import math.structures.Pair;
 

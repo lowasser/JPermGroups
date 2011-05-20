@@ -5,8 +5,8 @@ import com.google.common.collect.ImmutableSet;
 
 import java.util.Set;
 
-import math.algebra.permgroups.permutation.Permutation;
-import math.algebra.permgroups.permutation.Permutations;
+import math.permutation.Permutation;
+import math.permutation.Permutations;
 
 final class StabilizesPredicate<E> implements Predicate<Permutation<E>> {
   private final ImmutableSet<E> set;

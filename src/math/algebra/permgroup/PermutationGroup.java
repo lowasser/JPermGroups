@@ -19,8 +19,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import math.algebra.permgroups.permutation.Permutation;
-import math.algebra.permgroups.permutation.Permutations;
+import math.permutation.Permutation;
+import math.permutation.Permutations;
 
 public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
   private static <E> List<Predicate<Permutation<E>>>

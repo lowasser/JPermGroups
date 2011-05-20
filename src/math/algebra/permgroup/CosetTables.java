@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
-import math.algebra.permgroups.permutation.Permutation;
-import math.algebra.permgroups.permutation.Permutations;
+import math.permutation.Permutation;
+import math.permutation.Permutations;
 import math.structures.Pair;
 
 final class CosetTables<E> extends ForwardingList<Collection<Permutation<E>>> {

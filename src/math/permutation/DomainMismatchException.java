@@ -1,4 +1,4 @@
-package math.algebra.permgroups.permutation;
+package math.permutation;
 
 
 public class DomainMismatchException extends RuntimeException {

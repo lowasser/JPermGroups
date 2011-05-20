@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Set;
 
 import junit.framework.TestCase;
-import math.algebra.permgroups.permutation.Permutation;
-import math.algebra.permgroups.permutation.Permutations;
+import math.permutation.Permutation;
+import math.permutation.Permutations;
 
 public class PermutationTests extends TestCase {
   private final ImmutableSet<Integer> domainP = ImmutableSet.of(1, 2, 3, 4);

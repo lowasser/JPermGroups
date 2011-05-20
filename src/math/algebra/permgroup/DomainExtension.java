@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableSet;
 
 import java.util.Set;
 
-import math.algebra.permgroups.permutation.Permutation;
+import math.permutation.Permutation;
 
 final class DomainExtension<E> implements
     Function<Permutation<E>, Permutation<E>> {

@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import math.algebra.permgroups.permutation.Permutation;
+import math.permutation.Permutation;
 import math.structures.Pair;
 import math.structures.Partition;
 

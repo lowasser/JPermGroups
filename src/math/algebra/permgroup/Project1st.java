@@ -6,8 +6,8 @@ import com.google.common.collect.ImmutableSet;
 
 import java.util.Set;
 
-import math.algebra.permgroups.permutation.Permutation;
-import math.algebra.permgroups.permutation.Permutations;
+import math.permutation.Permutation;
+import math.permutation.Permutations;
 import math.structures.Pair;
 
 final class Project1st<A, B> extends Permutation<A> {

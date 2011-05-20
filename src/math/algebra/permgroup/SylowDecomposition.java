@@ -7,7 +7,7 @@ import com.google.common.collect.Lists;
 
 import java.util.List;
 
-import math.algebra.permgroups.permutation.Permutation;
+import math.permutation.Permutation;
 
 public class SylowDecomposition<E> {
   private PermutationGroup<E> sylowSubgroup;
