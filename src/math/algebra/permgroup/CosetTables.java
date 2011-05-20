@@ -1,7 +1,10 @@
 package math.algebra.permgroup;
 
+import algorithms.Pair;
+
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ForwardingList;
 import com.google.common.collect.ImmutableList;
@@ -33,6 +36,31 @@ final class CosetTables<E> extends ForwardingList<Collection<Permutation<E>>> {
       table.addGenerator(g);
     }
     return immutable(table);
+  }
+
+  static <A, B> CosetTables<Pair<A, B>> directProduct(Set<A> domainA,
+      CosetTables<A> tablesA, Set<B> domainB, CosetTables<B> tablesB) {
+    ImmutableList.Builder<Collection<Permutation<Pair<A, B>>>> tables =
+        ImmutableList.builder();
+    ImmutableList.Builder<Predicate<Permutation<Pair<A, B>>>> filters =
+        ImmutableList.builder();
+
+    Function<Permutation<Pair<A, B>>, Permutation<A>> inducedA =
+        Project1st.projectDown(domainA, domainB);
+    Function<Permutation<Pair<A, B>>, Permutation<B>> inducedB =
+        Project2nd.projectDown(domainA, domainB);
+    for (int i = 0; i < tablesA.size(); i++) {
+      filters.add(Predicates.compose(tablesA.filters.get(i), inducedA));
+    }
+    tables.addAll(Lists.transform(tablesA,
+        CollectionMap.forFunction(Project1st.projectUp(domainA, domainB))));
+
+    for (int i = 0; i < tablesB.size(); i++) {
+      filters.add(Predicates.compose(tablesB.filters.get(i), inducedB));
+    }
+    tables.addAll(Lists.transform(tablesB,
+        CollectionMap.forFunction(Project2nd.projectUp(domainA, domainB))));
+    return new CosetTables<Pair<A, B>>(tables.build(), filters.build());
   }
 
   static <E> CosetTables<E> immutable(CosetTables<E> tables) {
@@ -163,7 +191,7 @@ final class CosetTables<E> extends ForwardingList<Collection<Permutation<E>>> {
         return false;
       alpha = found;
     }
-    return true;
+    return Permutations.isIdentity(alpha);
   }
 
   @Override public CosetTables<E> subList(int fromIndex, int toIndex) {

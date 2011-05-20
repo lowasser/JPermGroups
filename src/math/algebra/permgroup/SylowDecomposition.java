@@ -21,7 +21,7 @@ public class SylowDecomposition<E> {
   }
 
   private SylowDecomposition(PermutationGroup<E> group, int p) {
-    this.sylowSubgroup = PermutationGroup.trivial(group.domain());
+    this.sylowSubgroup = Groups.trivial(group.domain());
     this.cosetRepresentatives =
         Lists.newArrayListWithCapacity(factorOut(group.size(), p));
     this.p = p;

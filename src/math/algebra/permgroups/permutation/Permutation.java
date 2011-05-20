@@ -11,9 +11,6 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class Permutation<E> {
-  Permutation() {
-  }
-
   public abstract E image(E e);
 
   public abstract E preimage(E e);

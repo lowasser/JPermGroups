@@ -27,8 +27,7 @@ public class PermutationGroupTests extends TestCase {
       .putAll(q1.asMap()).build());
 
   @SuppressWarnings("unchecked") public void testCyclicGroup1() {
-    PermutationGroup<Integer> group1 =
-        PermutationGroup.generateGroup(domainP, p1);
+    PermutationGroup<Integer> group1 = Groups.generateGroup(domainP, p1);
     assertEquals(2, group1.size());
     assertTrue(group1.contains(Permutations.identity(domainP)));
     assertTrue(group1.contains(p1));
@@ -36,8 +35,7 @@ public class PermutationGroupTests extends TestCase {
   }
 
   @SuppressWarnings("unchecked") public void testCyclicGroup2() {
-    PermutationGroup<Integer> group2 =
-        PermutationGroup.generateGroup(domainP, p2);
+    PermutationGroup<Integer> group2 = Groups.generateGroup(domainP, p2);
     assertEquals(3, group2.size());
     assertTrue(group2.contains(Permutations.identity(domainP)));
     assertFalse(group2.contains(p1));
@@ -45,8 +43,7 @@ public class PermutationGroupTests extends TestCase {
   }
 
   @SuppressWarnings("unchecked") public void testGroup12() {
-    PermutationGroup<Integer> group12 =
-        PermutationGroup.generateGroup(domainP, p1, p2);
+    PermutationGroup<Integer> group12 = Groups.generateGroup(domainP, p1, p2);
     assertEquals(6, group12.size());
     assertTrue(group12.contains(Permutations.identity(domainP)));
     assertTrue(group12.contains(p1));
@@ -55,12 +52,9 @@ public class PermutationGroupTests extends TestCase {
   }
 
   @SuppressWarnings("unchecked") public void testSubgroup() {
-    PermutationGroup<Integer> group1 =
-        PermutationGroup.generateGroup(domainP, p1);
-    PermutationGroup<Integer> group2 =
-        PermutationGroup.generateGroup(domainP, p2);
-    PermutationGroup<Integer> group12 =
-        PermutationGroup.generateGroup(domainP, p1, p2);
+    PermutationGroup<Integer> group1 = Groups.generateGroup(domainP, p1);
+    PermutationGroup<Integer> group2 = Groups.generateGroup(domainP, p2);
+    PermutationGroup<Integer> group12 = Groups.generateGroup(domainP, p1, p2);
     assertTrue(group1.isSubgroupOf(group12));
     assertTrue(group2.isSubgroupOf(group12));
     assertTrue(group12.isSubgroupOf(group12));
@@ -70,10 +64,8 @@ public class PermutationGroupTests extends TestCase {
   }
 
   @SuppressWarnings("unchecked") public void testSubgroupPredicate() {
-    PermutationGroup<Integer> group1 =
-        PermutationGroup.generateGroup(domainP, p1);
-    PermutationGroup<Integer> group12 =
-        PermutationGroup.generateGroup(domainP, p1, p2);
+    PermutationGroup<Integer> group1 = Groups.generateGroup(domainP, p1);
+    PermutationGroup<Integer> group12 = Groups.generateGroup(domainP, p1, p2);
     Predicate<Permutation<Integer>> stabilizes3 =
         new Predicate<Permutation<Integer>>() {
 
@@ -82,12 +74,5 @@ public class PermutationGroupTests extends TestCase {
           }
         };
     assertEquals(group1, group12.subgroup(stabilizes3));
-  }
-
-  @SuppressWarnings("unchecked") public void testDirectProduct() {
-    PermutationGroup<Integer> g = PermutationGroup.generateGroup(domainP, p2);
-    PermutationGroup<Integer> h = PermutationGroup.generateGroup(domainQ, q1);
-    PermutationGroup<Integer> gh = PermutationGroup.directProduct(g, h);
-    assertEquals(gh, PermutationGroup.generateGroup(domainPQ, pq1));
   }
 }
