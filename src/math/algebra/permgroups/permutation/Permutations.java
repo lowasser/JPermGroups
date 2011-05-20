@@ -48,6 +48,18 @@ public final class Permutations {
     return p.image(e).equals(e);
   }
 
+  public static <E> boolean preserves(Permutation<E> p, Map<E, ?> coloring) {
+    boolean good = true;
+    checkArgument(coloring.keySet().containsAll(p.domain()));
+    Iterator<E> iter = p.domain().iterator();
+    while (good && iter.hasNext()) {
+      E e = iter.next();
+      E eImg = p.image(e);
+      good &= coloring.get(e).equals(coloring.get(eImg));
+    }
+    return good;
+  }
+
   public static <E> boolean stabilizes(Permutation<E> p, Set<E> s) {
     Set<E> image = Sets.newHashSetWithExpectedSize(s.size());
     for (E e : s) {
