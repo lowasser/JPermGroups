@@ -13,6 +13,10 @@ import math.permutation.Permutation;
 public final class Orbit<E> extends ForwardingSet<E> {
   private final ImmutableSet<E> orbit;
 
+  public static <E> Orbit<E> orbit(E e, PermutationGroup<E> group) {
+    return orbit(e, group.generators());
+  }
+
   public static <E> Orbit<E>
       orbit(E e, Collection<Permutation<E>> permutations) {
     Set<E> orbit = Sets.newLinkedHashSet();

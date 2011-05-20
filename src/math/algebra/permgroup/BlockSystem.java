@@ -33,7 +33,7 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
 
   public static <E> BlockSystem<E>
       minimalBlockSystem(PermutationGroup<E> group) {
-    return trivial(group).minimalSystem();
+    return trivial(group).minimize();
   }
 
   public PermutationGroup<E> stabilizingSubgroup() {
@@ -98,7 +98,7 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
     return nBlocks;
   }
 
-  public BlockSystem<E> minimalSystem() {
+  public BlockSystem<E> minimize() {
     Iterator<E> iter = domain().iterator();
     E a = iter.next();
     BlockSystem<E> current = this;
