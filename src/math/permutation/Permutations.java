@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -12,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import math.algebra.permgroup.Orbit;
 import math.structures.Pair;
 
 public final class Permutations {
@@ -98,6 +98,15 @@ public final class Permutations {
     return new MapPermutation<E>(map);
   }
 
+  public static <E> Permutation<E> transposition(Set<E> domain, E a, E b) {
+    Permutation<E> swap = new MapPermutation<E>(ImmutableMap.of(a, b, b, a));
+    return extend(swap, domain);
+  }
+  
+  public static <E> Permutation<E> extend(Permutation<E> sigma, Set<E> domain){
+    return new ExtendedPermutation<E>(domain, sigma);
+  }
+
   public static <E> boolean preserves(Permutation<E> p, Map<E, ?> coloring) {
     boolean good = true;
     checkArgument(coloring.keySet().containsAll(p.domain()));
@@ -110,8 +119,7 @@ public final class Permutations {
     return good;
   }
 
-  public static <E> Permutation<E>
-      restrict(Permutation<E> sigma, Orbit<E> orbit) {
+  public static <E> Permutation<E> restrict(Permutation<E> sigma, Set<E> orbit) {
     return new RestrictedPermutation<E>(sigma, orbit);
   }
 
@@ -120,6 +128,9 @@ public final class Permutations {
   }
 
   public static <E> boolean stabilizes(Permutation<E> p, Set<E> s) {
+    if (s.size() > p.domain().size()) {
+      return false;
+    }
     Set<E> image = Sets.newHashSetWithExpectedSize(s.size());
     for (E e : s) {
       image.add(p.image(e));

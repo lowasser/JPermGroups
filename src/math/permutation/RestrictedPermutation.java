@@ -4,13 +4,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Set;
 
-import math.algebra.permgroup.Orbit;
-
 final class RestrictedPermutation<E> extends Permutation<E> {
   private final Permutation<E> sigma;
-  private final Orbit<E> orbit;
+  private final Set<E> orbit;
 
-  RestrictedPermutation(Permutation<E> sigma, Orbit<E> orbit) {
+  RestrictedPermutation(Permutation<E> sigma, Set<E> orbit) {
     this.sigma = checkNotNull(sigma);
     this.orbit = checkNotNull(orbit);
     assert isValid();

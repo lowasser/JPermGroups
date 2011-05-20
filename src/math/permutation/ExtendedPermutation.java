@@ -22,6 +22,7 @@ final class ExtendedPermutation<E> extends Permutation<E> {
   ExtendedPermutation(Set<E> domain, Permutation<E> sigma) {
     this.domain = ImmutableSet.copyOf(domain);
     this.sigma = checkNotNull(sigma);
+    assert domain.containsAll(sigma.domain());
   }
 
   @Override public E image(E e) {
