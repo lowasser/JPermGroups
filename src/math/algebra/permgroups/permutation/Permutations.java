@@ -19,19 +19,19 @@ public final class Permutations {
 
   public static <E> Permutation<E> compose(Permutation<E> p,
       Permutation<E>... perms) {
-    p = new MutablePermutation<E>(p);
     for (Permutation<E> q : perms) {
-      p = p.compose(q);
+      p = new ComposedPermutation<E>(p, q);
     }
     return new MapPermutation<E>(p);
   }
 
   public static <E> Permutation<E> compose(Iterable<Permutation<E>> perms) {
     Iterator<Permutation<E>> iter = perms.iterator();
-    checkArgument(iter.hasNext());
-    Permutation<E> p = new MutablePermutation<E>(iter.next());
+    checkArgument(iter.hasNext(),
+        "Cannot determine the domain of the composed permutation");
+    Permutation<E> p = iter.next();
     while (iter.hasNext()) {
-      p = p.compose(iter.next());
+      p = new ComposedPermutation<E>(p, iter.next());
     }
     return new MapPermutation<E>(p);
   }
@@ -115,6 +115,11 @@ public final class Permutations {
   }
 
   public static <E> Permutation<Pair<E, E>> pairAction(Permutation<E> sigma) {
-    return new PairPermutation<E>(sigma);
+    return directProduct(sigma, sigma);
+  }
+
+  public static <A, B> Permutation<Pair<A, B>> directProduct(
+      Permutation<A> sigmaA, Permutation<B> sigmaB) {
+    return new DirectProductPermutation<A, B>(sigmaA, sigmaB);
   }
 }

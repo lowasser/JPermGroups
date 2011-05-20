@@ -16,9 +16,7 @@ public abstract class Permutation<E> {
 
   public abstract E image(E e);
 
-  public E preimage(E e) {
-    return inverse().image(e);
-  }
+  public abstract E preimage(E e);
 
   public abstract Set<E> domain();
 
@@ -62,7 +60,7 @@ public abstract class Permutation<E> {
   }
 
   Permutation<E> createInverse() {
-    return new MapPermutation<E>(this).inverse();
+    return new InversePermutation<E>(this);
   }
 
   static <E> void checkDomains(Permutation<E> p, Permutation<E> q) {
