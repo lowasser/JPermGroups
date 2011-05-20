@@ -29,8 +29,8 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
   private final int nBlocks;
 
   public static <E> BlockSystem<E>
-      maximalBlockSystem(PermutationGroup<E> group) {
-    return trivial(group).maximalSystem();
+      minimalBlockSystem(PermutationGroup<E> group) {
+    return trivial(group).minimalSystem();
   }
 
   public static <E> BlockSystem<E> trivial(PermutationGroup<E> group) {
@@ -83,7 +83,7 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
     return nBlocks;
   }
 
-  public BlockSystem<E> maximalSystem() {
+  public BlockSystem<E> minimalSystem() {
     Iterator<E> iter = domain().iterator();
     E a = iter.next();
     BlockSystem<E> current = this;
