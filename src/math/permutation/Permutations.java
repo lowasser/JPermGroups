@@ -12,20 +12,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import math.algebra.permgroup.Orbit;
 import math.structures.Pair;
 
 public final class Permutations {
-  private Permutations() {
-  }
-
-  public static <E> Permutation<E> compose(Permutation<E> p,
-      Permutation<E>... perms) {
-    for (Permutation<E> q : perms) {
-      p = new ComposedPermutation<E>(p, q);
-    }
-    return new MapPermutation<E>(p);
-  }
-
   public static <E> Permutation<E> compose(Iterable<Permutation<E>> perms) {
     Iterator<Permutation<E>> iter = perms.iterator();
     checkArgument(iter.hasNext(),
@@ -37,36 +27,12 @@ public final class Permutations {
     return new MapPermutation<E>(p);
   }
 
-  public static <E> Permutation<E> permutation(Map<E, E> map) {
-    return new MapPermutation<E>(map);
-  }
-
-  public static <E> Permutation<E> identity(Set<E> domain) {
-    return new Identity<E>(domain);
-  }
-
-  public static <E> boolean stabilizes(Permutation<E> p, E e) {
-    return p.image(e).equals(e);
-  }
-
-  public static <E> boolean preserves(Permutation<E> p, Map<E, ?> coloring) {
-    boolean good = true;
-    checkArgument(coloring.keySet().containsAll(p.domain()));
-    Iterator<E> iter = p.domain().iterator();
-    while (good && iter.hasNext()) {
-      E e = iter.next();
-      E eImg = p.image(e);
-      good &= coloring.get(e).equals(coloring.get(eImg));
+  public static <E> Permutation<E> compose(Permutation<E> p,
+      Permutation<E>... perms) {
+    for (Permutation<E> q : perms) {
+      p = new ComposedPermutation<E>(p, q);
     }
-    return good;
-  }
-
-  public static <E> boolean stabilizes(Permutation<E> p, Set<E> s) {
-    Set<E> image = Sets.newHashSetWithExpectedSize(s.size());
-    for (E e : s) {
-      image.add(p.image(e));
-    }
-    return image.equals(s);
+    return new MapPermutation<E>(p);
   }
 
   public static <E> Permutation<E> cyclePermutation(Set<E> domain,
@@ -87,6 +53,15 @@ public final class Permutations {
       map.put(cycle.get(k - 1), write);
     }
     return new MapPermutation<E>(map);
+  }
+
+  public static <A, B> Permutation<Pair<A, B>> directProduct(
+      Permutation<A> sigmaA, Permutation<B> sigmaB) {
+    return new DirectProductPermutation<A, B>(sigmaA, sigmaB);
+  }
+
+  public static <E> Permutation<E> identity(Set<E> domain) {
+    return new Identity<E>(domain);
   }
 
   public static <E1, E2> Permutation<E2> induced(Permutation<E1> sigma,
@@ -119,8 +94,39 @@ public final class Permutations {
     return directProduct(sigma, sigma);
   }
 
-  public static <A, B> Permutation<Pair<A, B>> directProduct(
-      Permutation<A> sigmaA, Permutation<B> sigmaB) {
-    return new DirectProductPermutation<A, B>(sigmaA, sigmaB);
+  public static <E> Permutation<E> permutation(Map<E, E> map) {
+    return new MapPermutation<E>(map);
+  }
+
+  public static <E> boolean preserves(Permutation<E> p, Map<E, ?> coloring) {
+    boolean good = true;
+    checkArgument(coloring.keySet().containsAll(p.domain()));
+    Iterator<E> iter = p.domain().iterator();
+    while (good && iter.hasNext()) {
+      E e = iter.next();
+      E eImg = p.image(e);
+      good &= coloring.get(e).equals(coloring.get(eImg));
+    }
+    return good;
+  }
+
+  public static <E> Permutation<E>
+      restrict(Permutation<E> sigma, Orbit<E> orbit) {
+    return new RestrictedPermutation<E>(sigma, orbit);
+  }
+
+  public static <E> boolean stabilizes(Permutation<E> p, E e) {
+    return p.image(e).equals(e);
+  }
+
+  public static <E> boolean stabilizes(Permutation<E> p, Set<E> s) {
+    Set<E> image = Sets.newHashSetWithExpectedSize(s.size());
+    for (E e : s) {
+      image.add(p.image(e));
+    }
+    return image.equals(s);
+  }
+
+  private Permutations() {
   }
 }
