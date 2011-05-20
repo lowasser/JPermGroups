@@ -1,5 +1,6 @@
 package algorithms;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
@@ -7,6 +8,8 @@ import com.google.common.collect.Iterators;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 public class CartesianProduct<A, B> extends AbstractSet<Pair<A, B>> {
   public static <A, B> Set<Pair<A, B>> of(Set<A> setA, Set<B> setB) {
@@ -57,5 +60,14 @@ public class CartesianProduct<A, B> extends AbstractSet<Pair<A, B>> {
 
   @Override public int size() {
     return setA.size() * setB.size();
+  }
+
+  @Override public boolean equals(@Nullable Object o) {
+    if (o instanceof CartesianProduct) {
+      CartesianProduct<?, ?> product = (CartesianProduct<?, ?>) o;
+      return Objects.equal(setA, product.setA)
+          && Objects.equal(setB, product.setB);
+    }
+    return super.equals(o);
   }
 }
