@@ -26,6 +26,14 @@ public final class LeftCoset<E> extends AbstractSet<Permutation<E>> {
     this.group = group;
   }
 
+  public Permutation<E> getSigma() {
+    return sigma;
+  }
+
+  public PermutationGroup<E> getGroup() {
+    return group;
+  }
+
   @SuppressWarnings("unchecked") @Override public boolean equals(
       @Nullable Object o) {
     if (o instanceof LeftCoset) {
