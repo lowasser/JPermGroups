@@ -9,11 +9,13 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import math.permutation.Permutation;
@@ -22,6 +24,13 @@ import math.structures.CartesianProduct;
 import math.structures.Pair;
 
 public final class Groups {
+  private static final Predicate<Permutation> EVEN_PREDICATE =
+      new Predicate<Permutation>() {
+        @Override public boolean apply(Permutation sigma) {
+          return sigma.sign() == 1;
+        }
+      };
+
   public static <E> PermutationGroup<E> trivial(Set<E> domain) {
     return new PermutationGroup<E>(domain);
   }
@@ -119,5 +128,24 @@ public final class Groups {
       PermutationGroup<B> h, Function<Permutation<A>, Permutation<B>> phi) {
     return g
       .subgroup(Predicates.compose(Predicates.equalTo(h.identity()), phi));
+  }
+
+  @SuppressWarnings("unchecked") public static <E> PermutationGroup<E>
+      alternating(Set<E> domain) {
+    return symmetric(domain).subgroup((Predicate) EVEN_PREDICATE);
+  }
+
+  public static PermutationGroup<Integer> dihedral(int n) {
+    List<Integer> cycle = Lists.newArrayListWithCapacity(n);
+    for (int i = 0; i < n; i++)
+      cycle.add(i);
+    Set<Integer> domain = ImmutableSet.copyOf(cycle);
+    Map<Integer, Integer> flip = Maps.newHashMapWithExpectedSize(n);
+    for (int i = 0; i < n; i++) {
+      flip.put(i, n - 1 - i);
+    }
+    return generateGroup(domain, ImmutableList.of(
+        Permutations.cyclePermutation(domain, ImmutableList.of(cycle)),
+        Permutations.permutation(flip)));
   }
 }
