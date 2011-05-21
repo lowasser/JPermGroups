@@ -2,11 +2,17 @@ package math.algebra.permgroup;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
 
+import java.util.Collection;
 import java.util.List;
 
+import math.numbertheory.Factorization;
+import math.numbertheory.Factorization.Factor;
 import math.permutation.Permutation;
 
 public class SylowDecomposition<E> {
@@ -18,6 +24,35 @@ public class SylowDecomposition<E> {
   public static <E> SylowDecomposition<E>
       sylow(PermutationGroup<E> group, int p) {
     return new SylowDecomposition<E>(group, p);
+  }
+
+  public static <E> SylowDecomposition<E> sylow(PermutationGroup<E> group) {
+    Factorization factorization = Factorization.factorize(group.size());
+    Ordering<Factor> biggestComponent = new Ordering<Factor>() {
+      @Override public int compare(Factor left, Factor right) {
+        return left.getProduct() - right.getProduct();
+      }
+    };
+    Factor biggestFactor = biggestComponent.max(factorization);
+    return sylow(group, biggestFactor.getPrime());
+  }
+
+  private static int pow(int n, int p) {
+    int acc = 1;
+    while (true) {
+      switch (p) {
+        case 0:
+          return acc;
+        case 1:
+          return n * acc;
+        default:
+          if ((p & 1) != 0) {
+            acc *= n;
+          }
+          n = n * n;
+          p >>= 1;
+      }
+    }
   }
 
   private SylowDecomposition(PermutationGroup<E> group, int p) {
@@ -62,8 +97,17 @@ public class SylowDecomposition<E> {
     return sylowSubgroup;
   }
 
-  public List<Permutation<E>> getCosetRepresentatives() {
+  public Collection<Permutation<E>> getCosetRepresentatives() {
     return cosetRepresentatives;
+  }
+
+  public Collection<LeftCoset<E>> asCosetDecomposition() {
+    return Collections2.transform(getCosetRepresentatives(),
+        new Function<Permutation<E>, LeftCoset<E>>() {
+          @Override public LeftCoset<E> apply(Permutation<E> sigma) {
+            return LeftCoset.coset(sigma, sylowSubgroup);
+          }
+        });
   }
 
   private static boolean isPGroup(PermutationGroup<?> g, int p) {
