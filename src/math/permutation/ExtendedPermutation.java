@@ -5,6 +5,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableSet;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 final class ExtendedPermutation<E> extends Permutation<E> {
@@ -31,6 +33,14 @@ final class ExtendedPermutation<E> extends Permutation<E> {
 
   @Override public E preimage(E e) {
     return sigma.domain().contains(e) ? sigma.preimage(e) : e;
+  }
+
+  @Override Collection<List<E>> createCycleDecomposition() {
+    return sigma.cycleDecomposition();
+  }
+
+  @Override public int sign() {
+    return sigma.sign();
   }
 
   @Override public Permutation<E> extend(Set<E> newDomain) {

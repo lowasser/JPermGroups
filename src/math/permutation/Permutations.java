@@ -36,7 +36,7 @@ public final class Permutations {
   }
 
   public static <E> Permutation<E> cyclePermutation(Set<E> domain,
-      List<List<E>> cycles) {
+      List<? extends List<E>> cycles) {
     Map<E, E> map = Maps.newHashMapWithExpectedSize(domain.size());
     for (E e : domain) {
       map.put(e, e);
@@ -46,13 +46,13 @@ public final class Permutations {
         continue;
       }
       int k = cycle.size();
-      E write = map.get(cycle.get(k - 1));
+      E write = cycle.get(k - 1);
       for (int i = k - 2; i >= 0; i--) {
         write = map.put(cycle.get(i), write);
       }
       map.put(cycle.get(k - 1), write);
     }
-    return new MapPermutation<E>(map);
+    return extend(new MapPermutation<E>(map), domain);
   }
 
   public static <A, B> Permutation<Pair<A, B>> directProduct(
@@ -102,9 +102,10 @@ public final class Permutations {
     Permutation<E> swap = new MapPermutation<E>(ImmutableMap.of(a, b, b, a));
     return extend(swap, domain);
   }
-  
-  public static <E> Permutation<E> extend(Permutation<E> sigma, Set<E> domain){
-    return new ExtendedPermutation<E>(domain, sigma);
+
+  public static <E> Permutation<E> extend(Permutation<E> sigma, Set<E> domain) {
+    return (domain.size() == sigma.degree()) ? sigma
+        : new ExtendedPermutation<E>(domain, sigma);
   }
 
   public static <E> boolean preserves(Permutation<E> p, Map<E, ?> coloring) {

@@ -36,4 +36,8 @@ final class ComposedPermutation<E> extends Permutation<E> {
   @Override Function<E, E> createAsFunction() {
     return Functions.compose(q.asFunction(), p.asFunction());
   }
+
+  @Override public int sign() {
+    return p.sign() * q.sign();
+  }
 }
