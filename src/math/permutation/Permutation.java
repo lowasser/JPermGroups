@@ -37,9 +37,15 @@ public abstract class Permutation<E> {
     return (map == null) ? map = createAsMap() : map;
   }
 
-  public Permutation<E> compose(Permutation<E> perm) {
-    checkNotNull(perm);
-    return new MapPermutation<E>(new ComposedPermutation<E>(this, perm));
+  public Permutation<E> compose(Permutation<E> tau) {
+    checkNotNull(tau);
+    return new MapPermutation<E>(new ComposedPermutation<E>(this, tau));
+  }
+  
+  public Permutation<E> conjugate(Permutation<E> tau){
+    checkNotNull(tau);
+    checkDomains(this,tau);
+    return tau.inverse().compose(this).compose(tau);
   }
 
   public Collection<List<E>> cycleDecomposition() {

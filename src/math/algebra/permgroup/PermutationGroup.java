@@ -40,8 +40,8 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
   private final Permutation<E> id;
   private final CosetTables<E> cosetTables;
   private final ImmutableSet<E> domain;
-
   private final Collection<Permutation<E>> generators;
+
   PermutationGroup(Set<E> domain) {
     this(domain, ImmutableList.<Permutation<E>> of(), CosetTables
       .trivial(domain));
@@ -60,8 +60,8 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
         ImmutableSet.copyOf(Iterables.concat(cosetTables)).asList();
   }
 
-  PermutationGroup(Set<E> domain,
-      Collection<Permutation<E>> generators, CosetTables<E> cosetTables) {
+  PermutationGroup(Set<E> domain, Collection<Permutation<E>> generators,
+      CosetTables<E> cosetTables) {
     this.domain = ImmutableSet.copyOf(domain);
     this.generators = ImmutableList.copyOf(generators);
     this.id = Permutations.identity(domain);
@@ -173,5 +173,11 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
           .transform(generators, DomainExtension.forDomain(newDomain));
     CosetTables<E> cosetTables2 = cosetTables.extend(newDomain);
     return new PermutationGroup<E>(newDomain, generators2, cosetTables2);
+  }
+
+  public PermutationGroup<E> normalClosure(PermutationGroup<E> subgroup) {
+    CosetTables<E> closedTables =
+        CosetTables.normalClosure(subgroup.cosetTables, generators());
+    return new PermutationGroup<E>(domain, closedTables);
   }
 }
