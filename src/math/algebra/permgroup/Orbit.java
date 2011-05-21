@@ -2,11 +2,11 @@ package math.algebra.permgroup;
 
 import com.google.common.base.Functions;
 import com.google.common.collect.ForwardingSet;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -41,8 +41,8 @@ public final class Orbit<E> extends ForwardingSet<E> {
     return new Orbit<E>(orbit);
   }
 
-  public static <E> Orbit<E> orbit(E e, Permutation<E>... sigmas) {
-    return orbit(e, Arrays.asList(sigmas));
+  public static <E> Orbit<E> orbit(E e, Permutation<E> sigma) {
+    return orbit(e, ImmutableList.of(sigma));
   }
 
   private Orbit(Set<E> orbit) {

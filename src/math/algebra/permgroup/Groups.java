@@ -6,6 +6,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 import math.permutation.Permutation;
+import math.permutation.Permutations;
 import math.structures.CartesianProduct;
 import math.structures.Pair;
 
@@ -80,5 +82,42 @@ public final class Groups {
         Project2nd.projectUp(gDomain, hDomain)));
     return new PermutationGroup<Pair<A, B>>(CartesianProduct.of(gDomain,
         hDomain), generators, cosetTables);
+  }
+
+  public static <E> PermutationGroup<E> restrict(PermutationGroup<E> group,
+      Set<E> b) {
+    assert group.domain().containsAll(b);
+    for (Permutation<E> g : group.generators()) {
+      assert Permutations.stabilizes(g, b);
+    }
+    List<Permutation<E>> generators =
+        Lists.newArrayListWithCapacity(group.generators().size());
+    for (Permutation<E> g : group.generators()) {
+      generators.add(Permutations.restrict(g, b));
+    }
+    return generateGroup(b, generators);
+  }
+
+  public static <E> PermutationGroup<E> symmetric(Set<E> domain) {
+    return symmetric(ImmutableSet.copyOf(domain));
+  }
+
+  private static <E> PermutationGroup<E> symmetric(ImmutableSet<E> domain) {
+    if (domain.size() <= 1) {
+      return trivial(domain);
+    }
+    ImmutableList<E> domainList = domain.asList();
+    Permutation<E> sigma =
+        Permutations
+          .transposition(domain, domainList.get(0), domainList.get(1));
+    Permutation<E> tau =
+        Permutations.cyclePermutation(domain, ImmutableList.of(domainList));
+    return generateGroup(domain, ImmutableList.of(sigma, tau));
+  }
+
+  public static <A, B> PermutationGroup<A> kernel(PermutationGroup<A> g,
+      PermutationGroup<B> h, Function<Permutation<A>, Permutation<B>> phi) {
+    return g
+      .subgroup(Predicates.compose(Predicates.equalTo(h.identity()), phi));
   }
 }
