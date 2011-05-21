@@ -37,11 +37,17 @@ public abstract class Permutation<E> {
     return (map == null) ? map = createAsMap() : map;
   }
 
+  /**
+   * Returns this permutation post-composed with tau.
+   */
   public Permutation<E> compose(Permutation<E> tau) {
     checkNotNull(tau);
     return new MapPermutation<E>(new ComposedPermutation<E>(this, tau));
   }
   
+  /**
+   * Returns this permutation conjugated by tau.
+   */
   public Permutation<E> conjugate(Permutation<E> tau){
     checkNotNull(tau);
     checkDomains(this,tau);
