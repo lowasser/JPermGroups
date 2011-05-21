@@ -2,12 +2,15 @@ package math.algebra.permgroup;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
@@ -21,6 +24,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import math.permutation.Permutation;
+import math.permutation.Permutations;
 import math.structures.Pair;
 import math.structures.Partition;
 
@@ -30,6 +34,7 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
   private transient SetMultimap<Partition, E> blocks = null;
   private final int nBlocks;
   private transient PermutationGroup<E> stabilizingSubgroup = null;
+  private transient PermutationGroup<Object> action = null;
 
   public static <E> BlockSystem<E>
       minimalBlockSystem(PermutationGroup<E> group) {
@@ -46,6 +51,20 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
       return stabilizingSubgroup = group.subgroup(constraints);
     }
     return stabilizingSubgroup;
+  }
+
+  @SuppressWarnings("unchecked") public PermutationGroup<Object> blockAction() {
+    Function<Permutation<E>, Permutation<Object>> inducer =
+        new Function<Permutation<E>, Permutation<Object>>() {
+          @Override public Permutation<Object> apply(Permutation<E> input) {
+            return Permutations.induced(input,
+                Functions.forMap(BlockSystem.this));
+          }
+        };
+    Collection<Permutation<Object>> generators =
+        Collections2.transform(group.generators(), inducer);
+    return Groups.generateGroup(
+        ImmutableSet.<Object> copyOf(blocks().keySet()), generators);
   }
 
   public static <E> BlockSystem<E> trivial(PermutationGroup<E> group) {

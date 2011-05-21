@@ -2,6 +2,7 @@ package math.algebra.permgroup;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -228,5 +229,22 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     CosetTables<E> closedTables =
         CosetTables.normalClosure(subgroup.cosetTables, generators());
     return new PermutationGroup<E>(domain, closedTables);
+  }
+
+  public PermutationGroup<E> restrict(Set<E> newDomain) {
+    checkArgument(domain.containsAll(newDomain));
+    final ImmutableSet<E> theDomain = ImmutableSet.copyOf(newDomain);
+    Function<Permutation<E>, Permutation<E>> restrictor =
+        new Function<Permutation<E>, Permutation<E>>() {
+          @Override public Permutation<E> apply(Permutation<E> sigma) {
+            return Permutations.restrict(sigma, theDomain);
+          }
+        };
+    return Groups.generateGroup(theDomain,
+        Collections2.transform(generators(), restrictor));
+  }
+
+  public boolean isTransitive() {
+    return Orbit.orbit(domain().iterator().next(), this).size() == degree();
   }
 }
