@@ -23,10 +23,10 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import math.permutation.Permutation;
-import math.permutation.Permutations;
 import math.structures.Pair;
 import math.structures.Partition;
+import math.structures.permutation.Permutation;
+import math.structures.permutation.Permutations;
 
 final class BlockSystem<E> extends ForwardingMap<E, Object> {
   private final ImmutableMap<E, Partition> partition;
@@ -34,11 +34,16 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
   private transient SetMultimap<Partition, E> blocks = null;
   private final int nBlocks;
   private transient PermutationGroup<E> stabilizingSubgroup = null;
-  private transient PermutationGroup<Object> action = null;
+  private transient PermutationGroup<Object> blockAction = null;
 
   public static <E> BlockSystem<E>
       minimalBlockSystem(PermutationGroup<E> group) {
-    return trivial(group).minimize();
+    return minimalBlockSystem(group, group.domain());
+  }
+
+  public static <E> BlockSystem<E> minimalBlockSystem(
+      PermutationGroup<E> group, Set<E> domain) {
+    return trivial(group,domain).minimize();
   }
 
   public PermutationGroup<E> stabilizingSubgroup() {
@@ -54,6 +59,7 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
   }
 
   @SuppressWarnings("unchecked") public PermutationGroup<Object> blockAction() {
+    if(blockAction == null) {
     Function<Permutation<E>, Permutation<Object>> inducer =
         new Function<Permutation<E>, Permutation<Object>>() {
           @Override public Permutation<Object> apply(Permutation<E> input) {
@@ -63,13 +69,16 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
         };
     Collection<Permutation<Object>> generators =
         Collections2.transform(group.generators(), inducer);
-    return Groups.generateGroup(
+    return blockAction = Groups.generateGroup(
         ImmutableSet.<Object> copyOf(blocks().keySet()), generators);
+    }
+    return blockAction;
   }
 
-  public static <E> BlockSystem<E> trivial(PermutationGroup<E> group) {
+  public static <E> BlockSystem<E> trivial(PermutationGroup<E> group,
+      Set<E> domain) {
     ImmutableBiMap.Builder<E, Partition> builder = ImmutableBiMap.builder();
-    for (E e : group.domain()) {
+    for (E e : domain) {
       builder.put(e, new Partition());
     }
     ImmutableBiMap<E, Partition> partition = builder.build();
@@ -180,7 +189,7 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
   }
 
   public Set<E> domain() {
-    return group.domain();
+    return keySet();
   }
 
   private boolean isValid() {

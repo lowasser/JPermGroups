@@ -13,7 +13,7 @@ import java.util.List;
 
 import math.numbertheory.Factorization;
 import math.numbertheory.Factorization.Factor;
-import math.permutation.Permutation;
+import math.structures.permutation.Permutation;
 
 public class SylowDecomposition<E> {
   private PermutationGroup<E> sylowSubgroup;

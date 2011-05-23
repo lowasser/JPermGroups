@@ -6,9 +6,9 @@ import com.google.common.collect.ImmutableSet;
 
 import java.util.Set;
 
-import math.permutation.Permutation;
-import math.permutation.Permutations;
 import math.structures.Pair;
+import math.structures.permutation.Permutation;
+import math.structures.permutation.Permutations;
 
 final class Project1st<A, B> extends Permutation<A> {
   private final Permutation<Pair<A, B>> sigma;

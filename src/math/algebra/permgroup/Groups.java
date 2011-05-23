@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import math.permutation.Permutation;
-import math.permutation.Permutations;
 import math.structures.CartesianProduct;
 import math.structures.Pair;
+import math.structures.permutation.Permutation;
+import math.structures.permutation.Permutations;
 
 public final class Groups {
   private static final Predicate<Permutation> EVEN_PREDICATE =

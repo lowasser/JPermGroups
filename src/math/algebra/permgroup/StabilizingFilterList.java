@@ -9,7 +9,7 @@ import com.google.common.collect.Lists;
 
 import java.util.List;
 
-import math.permutation.Permutation;
+import math.structures.permutation.Permutation;
 
 final class StabilizingFilterList<E> extends
     ForwardingList<Predicate<Permutation<E>>> {

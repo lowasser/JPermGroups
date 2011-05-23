@@ -1,33 +1,35 @@
 package math.algebra.permgroup;
 
-import com.google.common.base.Functions;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.collect.ForwardingSet;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
-import math.permutation.Permutation;
-import math.structures.FunctionMap;
-
+import math.structures.permutation.Permutation;
 public final class Orbit<E> extends ForwardingSet<E> {
   private final ImmutableSet<E> orbit;
 
-  public static <E> Map<E, Orbit<E>> orbits(PermutationGroup<E> group) {
-    ImmutableMap.Builder<E, Orbit<E>> orbitMap = ImmutableMap.builder();
-    Set<E> todo = Sets.newLinkedHashSet(group.domain());
+  public static <E> Collection<Orbit<E>> orbits(PermutationGroup<E> group) {
+    return orbits(group, group.domain());
+  }
+
+  public static <E> Collection<Orbit<E>> orbits(PermutationGroup<E> group,
+      Set<E> domain) {
+    ImmutableList.Builder<Orbit<E>> builder = ImmutableList.builder();
+    Set<E> todo = Sets.newLinkedHashSet(domain);
     while (!todo.isEmpty()) {
       E e = todo.iterator().next();
       Orbit<E> orbit = orbit(e, group);
-      orbitMap.putAll(new FunctionMap<E, Orbit<E>>(orbit, Functions
-        .<Orbit<E>> constant(orbit)));
+      builder.add(orbit);
+      checkArgument(todo.containsAll(orbit));
       todo.removeAll(orbit);
     }
-    return orbitMap.build();
+    return builder.build();
   }
 
   public static <E> Orbit<E> orbit(E e, PermutationGroup<E> group) {

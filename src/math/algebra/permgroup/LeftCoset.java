@@ -1,37 +1,65 @@
 package math.algebra.permgroup;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 
 import java.util.AbstractSet;
+import java.util.Collection;
 import java.util.Iterator;
 
 import javax.annotation.Nullable;
 
-import math.permutation.Permutation;
+import math.structures.permutation.Permutation;
 
 public final class LeftCoset<E> extends AbstractSet<Permutation<E>> {
   private final Permutation<E> sigma;
-  private final PermutationGroup<E> group;
+  private final Collection<Permutation<E>> generators;
+  private transient PermutationGroup<E> group;
+
+  public static <E> LeftCoset<E> coset(Permutation<E> sigma,
+      Collection<Permutation<E>> generators) {
+    return new LeftCoset<E>(sigma, generators);
+  }
 
   public static <E> LeftCoset<E> coset(Permutation<E> sigma,
       PermutationGroup<E> group) {
-    assert Objects.equal(sigma.domain(), group.domain());
     return new LeftCoset<E>(sigma, group);
   }
 
-  private LeftCoset(Permutation<E> sigma, PermutationGroup<E> group) {
-    this.sigma = sigma;
-    this.group = group;
+  public Collection<Permutation<E>> getGenerators() {
+    return generators;
   }
 
-  public Permutation<E> getSigma() {
+  private LeftCoset(Permutation<E> sigma, Collection<Permutation<E>> generators) {
+    this.sigma = sigma;
+    this.generators = generators;
+  }
+
+  private LeftCoset(Permutation<E> sigma,
+      Collection<Permutation<E>> generators, PermutationGroup<E> group) {
+    this.sigma = checkNotNull(sigma);
+    this.generators = ImmutableList.copyOf(generators);
+    this.group = checkNotNull(group);
+    checkArgument(group.containsAll(generators));
+    checkArgument(Objects.equal(sigma.domain(), group.domain()));
+  }
+
+  private LeftCoset(Permutation<E> sigma, PermutationGroup<E> group) {
+    this(sigma, group.generators(), group);
+  }
+
+  public Permutation<E> getRepresentative() {
     return sigma;
   }
 
   public PermutationGroup<E> getGroup() {
-    return group;
+    return (group == null) ? group =
+        Groups.generateGroup(sigma.domain(), generators) : group;
   }
 
   @SuppressWarnings("unchecked") @Override public boolean equals(
@@ -72,5 +100,9 @@ public final class LeftCoset<E> extends AbstractSet<Permutation<E>> {
 
   @Override public int size() {
     return group.size();
+  }
+
+  public LeftCoset<E> compose(Permutation<E> tau) {
+    return new LeftCoset<E>(tau.compose(sigma), group);
   }
 }

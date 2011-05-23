@@ -20,8 +20,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import math.permutation.Permutation;
-import math.permutation.Permutations;
+import math.structures.permutation.Permutation;
+import math.structures.permutation.Permutations;
 
 public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
   private static <E> List<Predicate<Permutation<E>>>
@@ -165,7 +165,8 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
       return ((PermutationGroup) c).isSubgroupOf(this);
     } else if (c instanceof LeftCoset) {
       LeftCoset<?> coset = (LeftCoset<?>) c;
-      return containsAll(coset.getGroup()) && contains(coset.getSigma());
+      return containsAll(coset.getGroup())
+          && contains(coset.getRepresentative());
     }
     return super.containsAll(c);
   }
@@ -233,6 +234,9 @@ public class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
 
   public PermutationGroup<E> restrict(Set<E> newDomain) {
     checkArgument(domain.containsAll(newDomain));
+    if (domain.size() == newDomain.size()) {
+      return this;
+    }
     final ImmutableSet<E> theDomain = ImmutableSet.copyOf(newDomain);
     Function<Permutation<E>, Permutation<E>> restrictor =
         new Function<Permutation<E>, Permutation<E>>() {
