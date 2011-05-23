@@ -2,7 +2,11 @@ package math.structures.permutation;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.base.Objects;
+
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 final class InversePermutation<E> implements Permutation<E> {
   private final Permutation<E> forward;
@@ -41,5 +45,10 @@ final class InversePermutation<E> implements Permutation<E> {
 
   @Override public boolean stabilizes(Set<E> s) {
     return forward.stabilizes(s);
+  }
+
+  @Override public boolean equals(@Nullable Object obj) {
+    return (obj instanceof InversePermutation) ? Objects.equal(forward,
+        ((InversePermutation<?>) obj).forward) : super.equals(obj);
   }
 }
