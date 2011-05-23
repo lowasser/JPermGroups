@@ -18,21 +18,17 @@ final class Transposition<E> extends AbstractPermutation<E> {
     checkArgument(!Objects.equal(a, b));
   }
 
-  @Override public E preimage(E e) {
-    return apply(e);
-  }
-
   @Override public E apply(E e) {
     checkNotNull(e);
     return Objects.equal(e, a) ? b : Objects.equal(e, b) ? a : e;
   }
 
-  @Override protected Set<E> createSupport() {
-    return ImmutableSet.of(a, b);
-  }
-
   @Override public Permutation<E> inverse() {
     return this;
+  }
+
+  @Override public E preimage(E e) {
+    return apply(e);
   }
 
   @Override public boolean stabilizes(E e) {
@@ -41,5 +37,9 @@ final class Transposition<E> extends AbstractPermutation<E> {
 
   @Override public boolean stabilizes(Set<E> s) {
     return s.isEmpty() || (s.contains(a) && s.contains(b));
+  }
+
+  @Override protected Set<E> createSupport() {
+    return ImmutableSet.of(a, b);
   }
 }

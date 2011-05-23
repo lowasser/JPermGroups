@@ -55,20 +55,23 @@ public final class Permutations {
   public static <E> Permutation<E> compose(List<Permutation<E>> sigmas) {
     Map<E, E> map = Maps.newHashMap();
     sigmas = Lists.reverse(sigmas);
-    for (Permutation<E> sigma : sigmas)
+    for (Permutation<E> sigma : sigmas) {
       map.putAll(new FunctionMap<E, E>(sigma.support(), Functions
         .<E> identity()));
+    }
     Iterator<Entry<E, E>> entryIter = map.entrySet().iterator();
     while (entryIter.hasNext()) {
       Entry<E, E> entry = entryIter.next();
       E e = entry.getKey();
       E img = e;
-      for (Permutation<E> sigma : sigmas)
+      for (Permutation<E> sigma : sigmas) {
         img = sigma.apply(img);
-      if (Objects.equal(e, img))
+      }
+      if (Objects.equal(e, img)) {
         entryIter.remove();
-      else
+      } else {
         entry.setValue(img);
+      }
     }
     return new MapPermutation<E>(ImmutableBiMap.copyOf(map));
   }
@@ -97,17 +100,22 @@ public final class Permutations {
     return (Permutation) IDENTITY;
   }
 
-  public static <E> Permutation<E> transposition(E a, E b) {
-    return new Transposition<E>(a, b);
+  public static <E> Permutation<E> permutation(Map<E, E> map) {
+    return new MapPermutation<E>(map);
   }
 
   public static <E> Permutation<E>
       restrict(Permutation<E> sigma, Set<E> domain) {
-    if (domain.containsAll(sigma.support()))
+    if (domain.containsAll(sigma.support())) {
       return sigma;
+    }
     Set<E> support = Sets.newHashSet(sigma.support());
     support.retainAll(domain);
     return new RestrictedPermutation<E>(sigma, support);
+  }
+
+  public static <E> Permutation<E> transposition(E a, E b) {
+    return new Transposition<E>(a, b);
   }
 
   private Permutations() {

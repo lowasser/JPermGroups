@@ -19,24 +19,25 @@ final class InversePermutation<E> implements Permutation<E> {
     return forward.preimage(e);
   }
 
-  @Override public Set<E> support() {
-    return forward.support();
+  @Override public boolean equals(@Nullable Object obj) {
+    return (obj instanceof InversePermutation) ? Objects.equal(forward,
+        ((InversePermutation<?>) obj).forward) : super.equals(obj);
+  }
+
+  @Override public int hashCode() {
+    return forward.hashCode();
   }
 
   @Override public Permutation<E> inverse() {
     return forward;
   }
 
-  @Override public E preimage(E e) {
-    return forward.apply(e);
-  }
-
   @Override public Parity parity() {
     return forward.parity();
   }
 
-  @Override public int hashCode() {
-    return forward.hashCode();
+  @Override public E preimage(E e) {
+    return forward.apply(e);
   }
 
   @Override public boolean stabilizes(E e) {
@@ -47,8 +48,7 @@ final class InversePermutation<E> implements Permutation<E> {
     return forward.stabilizes(s);
   }
 
-  @Override public boolean equals(@Nullable Object obj) {
-    return (obj instanceof InversePermutation) ? Objects.equal(forward,
-        ((InversePermutation<?>) obj).forward) : super.equals(obj);
+  @Override public Set<E> support() {
+    return forward.support();
   }
 }

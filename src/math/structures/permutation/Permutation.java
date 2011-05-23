@@ -20,15 +20,15 @@ public interface Permutation<E> extends Function<E, E> {
     public abstract Parity inverse();
   }
 
-  public Set<E> support();
-
   public Permutation<E> inverse();
 
-  public E preimage(E e);
-
   public Parity parity();
+
+  public E preimage(E e);
 
   public boolean stabilizes(E e);
 
   public boolean stabilizes(Set<E> s);
+
+  public Set<E> support();
 }

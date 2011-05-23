@@ -18,9 +18,9 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
   transient Parity parity = null;
 
   @Override public boolean equals(@Nullable Object obj) {
-    if (obj == this)
+    if (obj == this) {
       return true;
-    else if (obj instanceof Permutation) {
+    } else if (obj instanceof Permutation) {
       @SuppressWarnings("unchecked")
       Permutation<E> sigma = (Permutation) obj;
       Set<E> support = support();
@@ -53,6 +53,19 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
     return (parity == null) ? parity = computeParity() : parity;
   }
 
+  @Override public boolean stabilizes(E e) {
+    return Objects.equal(e, apply(e));
+  }
+
+  @Override public boolean stabilizes(Set<E> s) {
+    for (E e : s) {
+      if (!s.contains(apply(e))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   @Override public Set<E> support() {
     return (support == null) ? support = createSupport() : support;
   }
@@ -73,8 +86,9 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
         count++;
         todo.remove(e);
       }
-      if ((count & 1) == 0)
+      if ((count & 1) == 0) {
         p = p.inverse();
+      }
     }
     return p;
   }
@@ -84,15 +98,4 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
   }
 
   protected abstract Set<E> createSupport();
-
-  @Override public boolean stabilizes(E e) {
-    return Objects.equal(e, apply(e));
-  }
-
-  @Override public boolean stabilizes(Set<E> s) {
-    for (E e : s)
-      if (!s.contains(apply(e)))
-        return false;
-    return true;
-  }
 }

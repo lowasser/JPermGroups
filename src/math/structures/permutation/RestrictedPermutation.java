@@ -15,16 +15,17 @@ final class RestrictedPermutation<E> extends AbstractPermutation<E> {
     this.support = support = ImmutableSet.copyOf(support);
     this.sigma = checkNotNull(sigma);
     checkArgument(sigma.stabilizes(support));
-    for (E e : support)
+    for (E e : support) {
       checkArgument(!sigma.stabilizes(e));
-  }
-
-  @Override public E preimage(E e) {
-    return support.contains(e) ? sigma.preimage(e) : e;
+    }
   }
 
   @Override public E apply(E e) {
     return support.contains(e) ? sigma.apply(e) : e;
+  }
+
+  @Override public E preimage(E e) {
+    return support.contains(e) ? sigma.preimage(e) : e;
   }
 
   @Override protected Set<E> createSupport() {
