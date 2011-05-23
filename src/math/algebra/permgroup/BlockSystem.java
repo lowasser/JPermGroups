@@ -10,7 +10,6 @@ import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
@@ -29,50 +28,10 @@ import math.structures.permutation.Permutation;
 import math.structures.permutation.Permutations;
 
 final class BlockSystem<E> extends ForwardingMap<E, Object> {
-  private final ImmutableMap<E, Partition> partition;
-  private final PermutationGroup<E> group;
-  private transient SetMultimap<Partition, E> blocks = null;
-  private final int nBlocks;
-  private transient PermutationGroup<E> stabilizingSubgroup = null;
-  private transient PermutationGroup<Object> blockAction = null;
-
-  public static <E> BlockSystem<E>
-      minimalBlockSystem(PermutationGroup<E> group) {
-    return minimalBlockSystem(group, group.domain());
-  }
 
   public static <E> BlockSystem<E> minimalBlockSystem(
       PermutationGroup<E> group, Set<E> domain) {
-    return trivial(group,domain).minimize();
-  }
-
-  public PermutationGroup<E> stabilizingSubgroup() {
-    if (stabilizingSubgroup == null) {
-      List<Predicate<Permutation<E>>> constraints = Lists.newArrayList();
-      for (final Collection<E> block : blocks().asMap().values()) {
-        // block is actually a Set<E>
-        constraints.add(StabilizesPredicate.on((Set<E>) block));
-      }
-      return stabilizingSubgroup = group.subgroup(constraints);
-    }
-    return stabilizingSubgroup;
-  }
-
-  @SuppressWarnings("unchecked") public PermutationGroup<Object> blockAction() {
-    if(blockAction == null) {
-    Function<Permutation<E>, Permutation<Object>> inducer =
-        new Function<Permutation<E>, Permutation<Object>>() {
-          @Override public Permutation<Object> apply(Permutation<E> input) {
-            return Permutations.induced(input,
-                Functions.forMap(BlockSystem.this));
-          }
-        };
-    Collection<Permutation<Object>> generators =
-        Collections2.transform(group.generators(), inducer);
-    return blockAction = Groups.generateGroup(
-        ImmutableSet.<Object> copyOf(blocks().keySet()), generators);
-    }
-    return blockAction;
+    return trivial(group, domain).minimize();
   }
 
   public static <E> BlockSystem<E> trivial(PermutationGroup<E> group,
@@ -86,9 +45,38 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
         group);
   }
 
-  public boolean isTrivial() {
-    int k = nBlocks();
-    return k == 1 || k == size();
+  private static <E> Pair<E, E> image(Permutation<E> sigma, Pair<E, E> p) {
+    return Pair.of(sigma.apply(p.getFirst()), sigma.apply(p.getSecond()));
+  }
+
+  private static <E> boolean union(Map<E, Partition> part, E a, E b) {
+    checkArgument(part.containsKey(a));
+    checkArgument(part.containsKey(b));
+    return part.get(a).combine(part.get(b));
+  }
+
+  private static <E> boolean union(Map<E, Partition> part, Pair<E, E> pair) {
+    return union(part, pair.getFirst(), pair.getSecond());
+  }
+
+  private final ImmutableMap<E, Partition> partition;
+
+  private final PermutationGroup<E> group;
+
+  private transient SetMultimap<Partition, E> blocks = null;
+
+  private final int nBlocks;
+
+  private transient PermutationGroup<E> stabilizingSubgroup = null;
+
+  private transient PermutationGroup<Object> blockAction = null;
+
+  private BlockSystem(ImmutableMap<E, Partition> partition,
+      SetMultimap<Partition, E> blocks, PermutationGroup<E> group) {
+    this.partition = partition;
+    this.group = group;
+    this.blocks = blocks;
+    this.nBlocks = blocks.size();
   }
 
   private BlockSystem(Map<E, Partition> partition, PermutationGroup<E> group,
@@ -99,16 +87,20 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
     assert isValid();
   }
 
-  private BlockSystem(ImmutableMap<E, Partition> partition,
-      SetMultimap<Partition, E> blocks, PermutationGroup<E> group) {
-    this.partition = partition;
-    this.group = group;
-    this.blocks = blocks;
-    this.nBlocks = blocks.size();
-  }
-
-  @SuppressWarnings("unchecked") @Override protected Map<E, Object> delegate() {
-    return (Map) partition;
+  public PermutationGroup<Object> blockAction() {
+    if (blockAction == null) {
+      Function<Permutation<E>, Permutation<Object>> inducer =
+          new Function<Permutation<E>, Permutation<Object>>() {
+            @Override public Permutation<Object> apply(Permutation<E> input) {
+              return Permutations.induced(input,
+                  Functions.forMap(BlockSystem.this));
+            }
+          };
+      Collection<Permutation<Object>> generators =
+          Collections2.transform(group.generators(), inducer);
+      return blockAction = Groups.generateGroup(generators);
+    }
+    return blockAction;
   }
 
   public SetMultimap<Partition, E> blocks() {
@@ -122,8 +114,13 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
     return blocks;
   }
 
-  public int nBlocks() {
-    return nBlocks;
+  public Set<E> domain() {
+    return keySet();
+  }
+
+  public boolean isTrivial() {
+    int k = nBlocks();
+    return k == 1 || k == size();
   }
 
   public BlockSystem<E> minimize() {
@@ -140,8 +137,24 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
     return current;
   }
 
-  private BlockSystem<E> extend(E a, E b) {
-    return extend(group.generators(), a, b);
+  public int nBlocks() {
+    return nBlocks;
+  }
+
+  public PermutationGroup<E> stabilizingSubgroup() {
+    if (stabilizingSubgroup == null) {
+      List<Predicate<Permutation<E>>> constraints = Lists.newArrayList();
+      for (final Collection<E> block : blocks().asMap().values()) {
+        // block is actually a Set<E>
+        constraints.add(StabilizesPredicate.on((Set<E>) block));
+      }
+      return stabilizingSubgroup = group.subgroup(constraints);
+    }
+    return stabilizingSubgroup;
+  }
+
+  @SuppressWarnings("unchecked") @Override protected Map<E, Object> delegate() {
+    return (Map) partition;
   }
 
   private BlockSystem<E> extend(Collection<Permutation<E>> perms, E a, E b) {
@@ -166,30 +179,16 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
     return new BlockSystem<E>(part, group, nB);
   }
 
+  private BlockSystem<E> extend(E a, E b) {
+    return extend(group.generators(), a, b);
+  }
+
   private Map<E, Partition> freshPartitionCopy() {
     Map<Object, Partition> copy = Maps.newHashMap();
     for (Partition p : blocks().keySet()) {
       copy.put(p, new Partition());
     }
     return Maps.newHashMap(Maps.transformValues(this, Functions.forMap(copy)));
-  }
-
-  private static <E> boolean union(Map<E, Partition> part, Pair<E, E> pair) {
-    return union(part, pair.getFirst(), pair.getSecond());
-  }
-
-  private static <E> boolean union(Map<E, Partition> part, E a, E b) {
-    checkArgument(part.containsKey(a));
-    checkArgument(part.containsKey(b));
-    return part.get(a).combine(part.get(b));
-  }
-
-  private static <E> Pair<E, E> image(Permutation<E> sigma, Pair<E, E> p) {
-    return Pair.of(sigma.image(p.getFirst()), sigma.image(p.getSecond()));
-  }
-
-  public Set<E> domain() {
-    return keySet();
   }
 
   private boolean isValid() {
@@ -203,7 +202,7 @@ final class BlockSystem<E> extends ForwardingMap<E, Object> {
       while (good && domainIterator.hasNext()) {
         E e = domainIterator.next();
         Partition p = partition.get(e);
-        Partition p2 = partition.get(sigma.image(e));
+        Partition p2 = partition.get(sigma.apply(e));
 
         Partition pPrime = induced.put(p, p2);
         good &= (pPrime == null || pPrime.equals(p2));
