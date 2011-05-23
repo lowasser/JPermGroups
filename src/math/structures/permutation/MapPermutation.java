@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableBiMap;
 import java.util.Map;
 import java.util.Set;
 
-final class MapPermutation<E> extends AbstractPermutation<E> {
+class MapPermutation<E> extends AbstractPermutation<E> {
   /**
    * Must not map any element to itself.
    */
@@ -56,11 +56,5 @@ final class MapPermutation<E> extends AbstractPermutation<E> {
 
   @Override protected Set<E> createSupport() {
     return map.keySet();
-  }
-
-  @Override protected Permutation<E> createInverse() {
-    MapPermutation<E> inverse = new MapPermutation<E>(map.inverse());
-    inverse.inverse = this;
-    return inverse;
   }
 }

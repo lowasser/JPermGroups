@@ -12,7 +12,6 @@ import com.google.common.collect.Maps;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -89,18 +88,8 @@ public final class Permutations {
   }
 
   public static <E> Permutation<E> cycle(List<E> cycle) {
-    if(cycle.size() <= 1)
-      return identity();
-    ImmutableBiMap.Builder<E, E> builder = ImmutableBiMap.builder();
-    ListIterator<E> iter = cycle.listIterator(cycle.size());
-    E prev = iter.previous();
-    builder.put(prev, cycle.get(0));
-    while (iter.hasPrevious()) {
-      E next = iter.previous();
-      builder.put(next, prev);
-      prev = next;
-    }
-    return new MapPermutation<E>(builder.build());
+    return (cycle.size() <= 1) ? Permutations.<E> identity() : new Cycle<E>(
+        cycle);
   }
 
   @SuppressWarnings("unchecked") public static <E> Permutation<E> identity() {

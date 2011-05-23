@@ -26,4 +26,12 @@ final class InversePermutation<E> implements Permutation<E> {
   @Override public E preimage(E e) {
     return forward.apply(e);
   }
+
+  @Override public Parity parity() {
+    return forward.parity();
+  }
+
+  @Override public int hashCode() {
+    return forward.hashCode();
+  }
 }
