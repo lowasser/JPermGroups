@@ -39,16 +39,10 @@ public class PermutationTests extends TestCase {
     assertFalse(p3.equals(compose(p1, p2)));
   }
 
-  public void testEqualsIdentity() {
-    Permutation<Integer> idP = Permutations.identity();
-    assertFalse(idP.equals(Permutations.identity()));
-    assertTrue(idP.equals(Permutations.identity()));
-  }
-
   public void testInverse() {
     Permutation<Integer> idP = Permutations.identity();
-    assertEquals(idP, compose(p1,p1.inverse()));
-    assertEquals(idP, compose(p1.inverse(),p1));
+    assertEquals(idP, compose(p1, p1.inverse()));
+    assertEquals(idP, compose(p1.inverse(), p1));
     assertFalse(idP.equals(p1));
   }
 }
