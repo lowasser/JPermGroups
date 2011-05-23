@@ -75,13 +75,12 @@ final class CosetTables<E> {
           Set<Permutation<E>> news = Sets.newHashSet();
           for (Permutation<E> tau : Iterables.concat(tables.subList(0,
               table.index + 1))) {
-            news.add(compose(tau, sigma));
+            news.add(compose(sigma, tau));
           }
           for (Permutation<E> tau : Iterables.concat(tables.subList(
               table.index + 1, tables.size()))) {
-            news.add(compose(sigma, tau));
+            news.add(compose(tau, sigma));
           }
-          news.remove(sigma);
           for (Permutation<E> tau : news) {
             filter(tau, this);
           }
