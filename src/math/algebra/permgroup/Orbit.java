@@ -29,13 +29,13 @@ public final class Orbit<E> extends ForwardingSet<E> {
   }
 
   public static <E> Collection<Orbit<E>> orbits(PermutationGroup<E> group) {
-    return orbits(group, group.domain());
+    return orbits(group, group.support());
   }
 
   public static <E> Collection<Orbit<E>> orbits(PermutationGroup<E> group,
-      Set<E> domain) {
+      Set<E> set) {
     ImmutableList.Builder<Orbit<E>> builder = ImmutableList.builder();
-    Set<E> todo = Sets.newLinkedHashSet(domain);
+    Set<E> todo = Sets.newLinkedHashSet(set);
     while (!todo.isEmpty()) {
       E e = todo.iterator().next();
       Orbit<E> orbit = orbit(e, group);
