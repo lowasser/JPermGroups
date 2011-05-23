@@ -7,13 +7,6 @@ public final class Partition {
     this.parent = this;
   }
 
-  private Partition find() {
-    if (parent == this) {
-      return this;
-    }
-    return parent = parent.find();
-  }
-
   public boolean combine(Partition p) {
     Partition x = find();
     Partition y = p.find();
@@ -25,15 +18,22 @@ public final class Partition {
     }
   }
 
-  @Override public int hashCode() {
-    return System.identityHashCode(find());
-  }
-
   @Override public boolean equals(Object obj) {
     if (obj instanceof Partition) {
       Partition p = (Partition) obj;
       return find() == p.find();
     }
     return false;
+  }
+
+  @Override public int hashCode() {
+    return System.identityHashCode(find());
+  }
+
+  private Partition find() {
+    if (parent == this) {
+      return this;
+    }
+    return parent = parent.find();
   }
 }

@@ -6,13 +6,6 @@ import com.google.common.base.Objects;
 import javax.annotation.Nullable;
 
 public final class Pair<A, B> {
-  public static <A, B> Pair<A, B> of(A a, B b) {
-    return new Pair<A, B>(a, b);
-  }
-
-  @Nullable private final A a;
-  @Nullable private final B b;
-
   public static <A, B> Function<Pair<A, B>, A> firstFunction() {
     return new Function<Pair<A, B>, A>() {
       @Override public A apply(Pair<A, B> input) {
@@ -20,6 +13,14 @@ public final class Pair<A, B> {
       }
     };
   }
+
+  public static <A, B> Pair<A, B> of(A a, B b) {
+    return new Pair<A, B>(a, b);
+  }
+
+  @Nullable private final A a;
+
+  @Nullable private final B b;
 
   private Pair(@Nullable A a, @Nullable B b) {
     this.a = a;

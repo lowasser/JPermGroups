@@ -35,9 +35,19 @@ public final class FunctionMap<K, V> extends AbstractMap<K, V> {
   private final Function<? super K, V> function;
   private transient Integer hashCode = null;
 
+  private transient Set<Entry<K, V>> entrySet = null;
+
   public FunctionMap(Set<K> keySet, Function<? super K, V> function) {
     this.keySet = ImmutableSet.copyOf(keySet);
     this.function = checkNotNull(function);
+  }
+
+  @Override public Set<Entry<K, V>> entrySet() {
+    return (entrySet == null) ? entrySet = new EntrySet() : entrySet;
+  }
+
+  @Override public int hashCode() {
+    return (hashCode == null) ? hashCode = entrySet().hashCode() : hashCode;
   }
 
   @Override public int size() {
@@ -46,15 +56,5 @@ public final class FunctionMap<K, V> extends AbstractMap<K, V> {
 
   @Override public Collection<V> values() {
     return Collections2.transform(keySet, function);
-  }
-
-  private transient Set<Entry<K, V>> entrySet = null;
-
-  @Override public Set<Entry<K, V>> entrySet() {
-    return (entrySet == null) ? entrySet = new EntrySet() : entrySet;
-  }
-
-  @Override public int hashCode() {
-    return (hashCode == null) ? hashCode = entrySet().hashCode() : hashCode;
   }
 }
