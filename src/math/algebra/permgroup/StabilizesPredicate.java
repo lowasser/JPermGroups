@@ -6,15 +6,8 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 
 import math.structures.permutation.Permutation;
-import math.structures.permutation.Permutations;
 
 final class StabilizesPredicate<E> implements Predicate<Permutation<E>> {
-  private final ImmutableSet<E> set;
-
-  private StabilizesPredicate(ImmutableSet<E> set) {
-    this.set = set;
-  }
-
   public static <E> StabilizesPredicate<E> on(E e) {
     return new StabilizesPredicate<E>(ImmutableSet.of(e));
   }
@@ -27,12 +20,14 @@ final class StabilizesPredicate<E> implements Predicate<Permutation<E>> {
     return new StabilizesPredicate<E>(ImmutableSet.copyOf(elements));
   }
 
-  @Override public boolean apply(Permutation<E> sigma) {
-    return Permutations.stabilizes(sigma, set);
+  private final ImmutableSet<E> set;
+
+  private StabilizesPredicate(ImmutableSet<E> set) {
+    this.set = set;
   }
 
-  @Override public int hashCode() {
-    return set.hashCode();
+  @Override public boolean apply(Permutation<E> sigma) {
+    return sigma.stabilizes(set);
   }
 
   @Override public boolean equals(Object obj) {
@@ -40,6 +35,10 @@ final class StabilizesPredicate<E> implements Predicate<Permutation<E>> {
       return ((StabilizesPredicate) obj).set.equals(this.set);
     }
     return false;
+  }
+
+  @Override public int hashCode() {
+    return set.hashCode();
   }
 
   @Override public String toString() {

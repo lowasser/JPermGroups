@@ -40,7 +40,7 @@ final class CosetTables<E> {
 
   public static <E> CosetTables<E> subgroupTables(
       Iterable<? extends Permutation<E>> generators,
-      List<Predicate<? super Permutation<E>>> filters) {
+      List<? extends Predicate<? super Permutation<E>>> filters) {
     CosetTables<E> tables = new CosetTables<E>();
     for (Predicate<? super Permutation<E>> filter : filters)
       tables.addTable(filter);
