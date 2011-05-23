@@ -1,7 +1,8 @@
 package math.structures.permutation;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
+import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableBiMap;
@@ -116,6 +117,23 @@ public final class Permutations {
 
   public static <E> Permutation<E> transposition(E a, E b) {
     return new Transposition<E>(a, b);
+  }
+
+  public static <A, B> Permutation<B> induced(Permutation<A> sigma,
+      Function<A, B> phi) {
+    Map<B, B> map = Maps.newHashMap();
+    for (A a : sigma.support()) {
+      A aImg = sigma.apply(a);
+      B b = phi.apply(a);
+      B bImg = phi.apply(aImg);
+      if (map.containsKey(b)) {
+        checkArgument(Objects.equal(bImg, map.get(b)),
+            "Function does not induce a bijection");
+      } else {
+        map.put(b, bImg);
+      }
+    }
+    return permutation(map);
   }
 
   private Permutations() {
