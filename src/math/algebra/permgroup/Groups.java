@@ -48,6 +48,8 @@ public final class Groups {
       };
 
   public static <E> PermutationGroup<E> alternating(Set<E> domain) {
+    if (domain.size() <= 2)
+      return trivial();
     return symmetric(domain).subgroup(EVEN_PREDICATE);
   }
 
@@ -80,7 +82,9 @@ public final class Groups {
   }
 
   public static <E> PermutationGroup<E> symmetric(Set<E> domain) {
-    return symmetric(ImmutableSet.copyOf(domain));
+    if (domain.size() <= 1)
+      return trivial();
+    return new SymmetricGroup<E>(domain);
   }
 
   private static <E> PermutationGroup<E> symmetric(ImmutableSet<E> domain) {
