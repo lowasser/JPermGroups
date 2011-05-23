@@ -98,4 +98,8 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
   }
 
   protected abstract Set<E> createSupport();
+
+  @Override public boolean isIdentity() {
+    return support().isEmpty();
+  }
 }

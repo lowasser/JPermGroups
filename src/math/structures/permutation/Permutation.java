@@ -31,4 +31,6 @@ public interface Permutation<E> extends Function<E, E> {
   public boolean stabilizes(Set<E> s);
 
   public Set<E> support();
+
+  public boolean isIdentity();
 }

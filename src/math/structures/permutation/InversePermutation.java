@@ -51,4 +51,8 @@ final class InversePermutation<E> implements Permutation<E> {
   @Override public Set<E> support() {
     return forward.support();
   }
+
+  @Override public boolean isIdentity() {
+    return forward.isIdentity();
+  }
 }
