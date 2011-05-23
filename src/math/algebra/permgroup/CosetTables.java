@@ -1,8 +1,10 @@
 package math.algebra.permgroup;
 
+import static com.google.common.base.Preconditions.checkPositionIndex;
 import static math.structures.permutation.Permutations.compose;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -34,6 +36,23 @@ final class CosetTables<E> {
       tables.addGenerator(g);
     }
     return immutable(tables);
+  }
+
+  public static <E> CosetTables<E> subgroupTables(
+      Iterable<? extends Permutation<E>> generators,
+      List<Predicate<? super Permutation<E>>> filters) {
+    CosetTables<E> tables = new CosetTables<E>();
+    for (Predicate<? super Permutation<E>> filter : filters)
+      tables.addTable(filter);
+    for (Permutation<E> g : generators) {
+      tables.addGenerator(g);
+    }
+    return immutable(tables.drop(filters.size()));
+  }
+
+  public CosetTables<E> drop(int k) {
+    checkPositionIndex(k, tables.size());
+    return new CosetTables<E>(support, tables.subList(k, tables.size()));
   }
 
   public static <E> CosetTables<E> immutable(CosetTables<E> cTables) {
@@ -80,6 +99,28 @@ final class CosetTables<E> {
     this.tables = tables;
   }
 
+  public CosetTables<E> extend(Collection<Permutation<E>> newGenerators) {
+    List<Permutation<E>> gens =
+        Lists.newArrayListWithCapacity(newGenerators.size());
+    for (Permutation<E> g : newGenerators) {
+      if (!generates(g))
+        gens.add(g);
+    }
+    if (gens.isEmpty()) {
+      return this;
+    }
+    List<CosetTable<E>> newTables =
+        Lists.newArrayListWithCapacity(tables.size());
+    for (CosetTable<E> table : this.tables) {
+      newTables.add(CosetTable.mutableCopy(table));
+    }
+    CosetTables<E> result =
+        new CosetTables<E>(Sets.newHashSet(support), newTables);
+    for (Permutation<E> g : gens)
+      result.addGenerator(g);
+    return immutable(result);
+  }
+
   public Iterator<Permutation<E>> generatedIterator() {
     return generated().iterator();
   }
@@ -96,8 +137,16 @@ final class CosetTables<E> {
     return sigma.isIdentity();
   }
 
+  public Set<E> getSupport() {
+    return support;
+  }
+
   public int size() {
     return generated().size();
+  }
+
+  public List<CosetTable<E>> getTables() {
+    return tables;
   }
 
   boolean addGenerator(Permutation<E> sigma) {
@@ -107,7 +156,7 @@ final class CosetTables<E> {
   boolean filter(Permutation<E> sigma, CosetTablesListener<E> listener) {
     for (E e : sigma.support()) {
       if (support.add(e)) {
-        tables.add(CosetTable.stabilizingTable(tables.size(), e));
+        addStabilizingTable(e);
       }
     }
 
@@ -124,6 +173,14 @@ final class CosetTables<E> {
       sigma = sigmaPrime;
     }
     return false;
+  }
+
+  private void addStabilizingTable(E e) {
+    addTable(StabilizesPredicate.on(e));
+  }
+
+  private void addTable(Predicate<? super Permutation<E>> filter) {
+    tables.add(CosetTable.table(tables.size(), filter));
   }
 
   private Collection<Permutation<E>> generated() {

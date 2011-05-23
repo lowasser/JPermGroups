@@ -7,7 +7,6 @@ import com.google.common.collect.ForwardingSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
-import java.util.Collection;
 import java.util.Set;
 
 import math.structures.permutation.Permutation;
@@ -15,11 +14,15 @@ import math.structures.permutation.Permutation;
 final class CosetTable<E> extends ForwardingSet<Permutation<E>> {
   final int index;
   private final Set<Permutation<E>> representatives;
-  private final Predicate<Permutation<E>> filter;
+  private final Predicate<? super Permutation<E>> filter;
 
   public static <E> CosetTable<E> stabilizingTable(int index, E stabilized) {
-    return new CosetTable<E>(index, Sets.<Permutation<E>> newHashSet(),
-        StabilizesPredicate.on(stabilized));
+    return table(index, StabilizesPredicate.on(stabilized));
+  }
+
+  public static <E> CosetTable<E> table(int index,
+      Predicate<? super Permutation<E>> filter) {
+    return new CosetTable<E>(index, Sets.<Permutation<E>> newHashSet(), filter);
   }
 
   public static <E> CosetTable<E> immutable(CosetTable<E> table) {
@@ -27,8 +30,12 @@ final class CosetTable<E> extends ForwardingSet<Permutation<E>> {
         ImmutableSet.copyOf(table.representatives), table.filter);
   }
 
+  public static <E> CosetTable<E> mutableCopy(CosetTable<E> table) {
+    return new CosetTable<E>(table.index, Sets.newHashSet(table), table.filter);
+  }
+
   private CosetTable(int index, Set<Permutation<E>> representatives,
-      Predicate<Permutation<E>> filter) {
+      Predicate<? super Permutation<E>> filter) {
     this.index = index;
     this.representatives = representatives;
     this.filter = filter;
