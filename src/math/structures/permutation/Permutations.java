@@ -12,6 +12,7 @@ import com.google.common.collect.Maps;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -51,16 +52,6 @@ public final class Permutations {
         }
       };
 
-  public static <E> Permutation<E> compose(Permutation<E> sigma,
-      Permutation<E> tau) {
-    return compose(ImmutableList.of(sigma, tau));
-  }
-
-  public static <E> Permutation<E> compose(Permutation<E> sigma1,
-      Permutation<E> sigma2, Permutation<E> sigma3) {
-    return compose(ImmutableList.of(sigma1, sigma2, sigma3));
-  }
-
   public static <E> Permutation<E> compose(List<Permutation<E>> sigmas) {
     Map<E, E> map = Maps.newHashMap();
     sigmas = Lists.reverse(sigmas);
@@ -82,13 +73,42 @@ public final class Permutations {
     return new MapPermutation<E>(ImmutableBiMap.copyOf(map));
   }
 
-  @SuppressWarnings("unchecked") public static <E> Permutation<E> identity() {
-    return (Permutation) IDENTITY;
+  public static <E> Permutation<E> compose(Permutation<E> sigma,
+      Permutation<E> tau) {
+    return compose(ImmutableList.of(sigma, tau));
+  }
+
+  public static <E> Permutation<E> compose(Permutation<E> sigma1,
+      Permutation<E> sigma2, Permutation<E> sigma3) {
+    return compose(ImmutableList.of(sigma1, sigma2, sigma3));
   }
 
   public static <E> Permutation<E> conjugate(Permutation<E> sigma,
       Permutation<E> tau) {
     return compose(tau.inverse(), sigma, tau);
+  }
+
+  public static <E> Permutation<E> cycle(List<E> cycle) {
+    if(cycle.size() <= 1)
+      return identity();
+    ImmutableBiMap.Builder<E, E> builder = ImmutableBiMap.builder();
+    ListIterator<E> iter = cycle.listIterator(cycle.size());
+    E prev = iter.previous();
+    builder.put(prev, cycle.get(0));
+    while (iter.hasPrevious()) {
+      E next = iter.previous();
+      builder.put(next, prev);
+      prev = next;
+    }
+    return new MapPermutation<E>(builder.build());
+  }
+
+  @SuppressWarnings("unchecked") public static <E> Permutation<E> identity() {
+    return (Permutation) IDENTITY;
+  }
+
+  public static <E> Permutation<E> transposition(E a, E b) {
+    return new Transposition<E>(a, b);
   }
 
   private Permutations() {
