@@ -8,6 +8,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import math.structures.FunctionMap;
+
 public abstract class AbstractPermutation<E> implements Permutation<E> {
   private transient Set<E> support = null;
 
@@ -49,6 +51,10 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
 
   @Override public Set<E> support() {
     return (support == null) ? support = createSupport() : support;
+  }
+
+  @Override public String toString() {
+    return new FunctionMap<E, E>(support(), this).toString();
   }
 
   protected Permutation<E> createInverse() {
