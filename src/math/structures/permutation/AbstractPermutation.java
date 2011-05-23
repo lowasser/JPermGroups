@@ -84,4 +84,15 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
   }
 
   protected abstract Set<E> createSupport();
+
+  @Override public boolean stabilizes(E e) {
+    return Objects.equal(e, apply(e));
+  }
+
+  @Override public boolean stabilizes(Set<E> s) {
+    for (E e : s)
+      if (!s.contains(apply(e)))
+        return false;
+    return true;
+  }
 }

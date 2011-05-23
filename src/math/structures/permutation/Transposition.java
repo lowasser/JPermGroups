@@ -34,4 +34,12 @@ final class Transposition<E> extends AbstractPermutation<E> {
   @Override public Permutation<E> inverse() {
     return this;
   }
+
+  @Override public boolean stabilizes(E e) {
+    return !(Objects.equal(e, a) || Objects.equal(e, b));
+  }
+
+  @Override public boolean stabilizes(Set<E> s) {
+    return s.isEmpty() || (s.contains(a) && s.contains(b));
+  }
 }

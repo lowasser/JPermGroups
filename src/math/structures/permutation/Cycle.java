@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
 
 import java.util.List;
+import java.util.Set;
 
 final class Cycle<E> extends MapPermutation<E> {
   private final List<E> cycle;
@@ -24,5 +25,13 @@ final class Cycle<E> extends MapPermutation<E> {
   @Override protected math.structures.permutation.Permutation.Parity
       computeParity() {
     return ((cycle.size() & 1) == 0) ? Parity.ODD : Parity.EVEN; // not a typo
+  }
+
+  @Override public boolean stabilizes(E e) {
+    return !support().contains(e);
+  }
+
+  @Override public boolean stabilizes(Set<E> s) {
+    return s.isEmpty() || s.containsAll(support());
   }
 }

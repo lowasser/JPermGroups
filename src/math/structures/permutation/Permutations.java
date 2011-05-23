@@ -99,7 +99,7 @@ public final class Permutations {
   public static <E> Permutation<E> transposition(E a, E b) {
     return new Transposition<E>(a, b);
   }
-
+  
   private Permutations() {
   }
 }

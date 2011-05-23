@@ -27,4 +27,8 @@ public interface Permutation<E> extends Function<E, E> {
   public E preimage(E e);
 
   public Parity parity();
+
+  public boolean stabilizes(E e);
+
+  public boolean stabilizes(Set<E> s);
 }
