@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 import java.util.Set;
 
 import math.structures.permutation.Permutation;
+import math.structures.permutation.Permutations;
 
 final class CosetTable<E> extends ForwardingSet<Permutation<E>> {
   final int index;
@@ -22,7 +23,9 @@ final class CosetTable<E> extends ForwardingSet<Permutation<E>> {
 
   public static <E> CosetTable<E> table(int index,
       Predicate<? super Permutation<E>> filter) {
-    return new CosetTable<E>(index, Sets.<Permutation<E>> newHashSet(), filter);
+    Set<Permutation<E>> table = Sets.newHashSet();
+    table.add(Permutations.<E> identity());
+    return new CosetTable<E>(index, table, filter);
   }
 
   public static <E> CosetTable<E> immutable(CosetTable<E> table) {
