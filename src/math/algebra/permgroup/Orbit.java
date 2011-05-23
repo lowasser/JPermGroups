@@ -11,8 +11,22 @@ import java.util.Collection;
 import java.util.Set;
 
 import math.structures.permutation.Permutation;
+
 public final class Orbit<E> extends ForwardingSet<E> {
-  private final ImmutableSet<E> orbit;
+  public static <E> Orbit<E>
+      orbit(E e, Collection<Permutation<E>> permutations) {
+    Set<E> orbit = Sets.newLinkedHashSet();
+    buildOrbit(e, orbit, permutations);
+    return new Orbit<E>(orbit);
+  }
+
+  public static <E> Orbit<E> orbit(E e, Permutation<E> sigma) {
+    return orbit(e, ImmutableList.of(sigma));
+  }
+
+  public static <E> Orbit<E> orbit(E e, PermutationGroup<E> group) {
+    return orbit(e, group.generators());
+  }
 
   public static <E> Collection<Orbit<E>> orbits(PermutationGroup<E> group) {
     return orbits(group, group.domain());
@@ -32,32 +46,20 @@ public final class Orbit<E> extends ForwardingSet<E> {
     return builder.build();
   }
 
-  public static <E> Orbit<E> orbit(E e, PermutationGroup<E> group) {
-    return orbit(e, group.generators());
+  private static <E> void buildOrbit(E e, Set<E> visited,
+      Collection<Permutation<E>> permutations) {
+    if (!visited.add(e)) {
+      return;
+    }
+    for (Permutation<E> sigma : permutations) {
+      buildOrbit(sigma.apply(e), visited, permutations);
+    }
   }
 
-  public static <E> Orbit<E>
-      orbit(E e, Collection<Permutation<E>> permutations) {
-    Set<E> orbit = Sets.newLinkedHashSet();
-    buildOrbit(e, orbit, permutations);
-    return new Orbit<E>(orbit);
-  }
-
-  public static <E> Orbit<E> orbit(E e, Permutation<E> sigma) {
-    return orbit(e, ImmutableList.of(sigma));
-  }
+  private final ImmutableSet<E> orbit;
 
   private Orbit(Set<E> orbit) {
     this.orbit = ImmutableSet.copyOf(orbit);
-  }
-
-  private static <E> void buildOrbit(E e, Set<E> visited,
-      Collection<Permutation<E>> permutations) {
-    if (!visited.add(e))
-      return;
-    for (Permutation<E> sigma : permutations) {
-      buildOrbit(sigma.image(e), visited, permutations);
-    }
   }
 
   @Override protected Set<E> delegate() {
