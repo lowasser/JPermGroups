@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import java.util.Iterator;
 import java.util.List;
@@ -99,7 +100,16 @@ public final class Permutations {
   public static <E> Permutation<E> transposition(E a, E b) {
     return new Transposition<E>(a, b);
   }
-  
+
+  public static <E> Permutation<E>
+      restrict(Permutation<E> sigma, Set<E> domain) {
+    if (domain.containsAll(sigma.support()))
+      return sigma;
+    Set<E> support = Sets.newHashSet(sigma.support());
+    support.retainAll(domain);
+    return new RestrictedPermutation<E>(sigma, support);
+  }
+
   private Permutations() {
   }
 }
