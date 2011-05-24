@@ -61,7 +61,7 @@ final class CosetTables<E> {
       builder.add(CosetTable.immutable(table));
     }
     return new CosetTables<E>(ImmutableSet.copyOf(cTables.support),
-        builder.build());
+        builder.build(), ImmutableList.copyOf(cTables.generators));
   }
 
   private final Set<E> support;
@@ -88,14 +88,24 @@ final class CosetTables<E> {
       };
 
   private transient Collection<Permutation<E>> generated;
+  private final Collection<Permutation<E>> generators;
 
   private CosetTables() {
-    this(Sets.<E> newHashSet(), Lists.<CosetTable<E>> newArrayList());
+    this(Sets.<E> newHashSet(), Lists.<CosetTable<E>> newArrayList(), Lists
+      .<Permutation<E>> newArrayList());
+  }
+
+  private CosetTables(Set<E> support, List<CosetTable<E>> tables,
+      Collection<Permutation<E>> generators) {
+    this.support = support;
+    this.tables = tables;
+    this.generators = generators;
   }
 
   private CosetTables(Set<E> support, List<CosetTable<E>> tables) {
     this.support = support;
     this.tables = tables;
+    this.generators = Lists.newArrayList(Iterables.concat(tables));
   }
 
   public CosetTables<E> extend(Collection<Permutation<E>> newGenerators) {
@@ -114,7 +124,7 @@ final class CosetTables<E> {
       newTables.add(CosetTable.mutableCopy(table));
     }
     CosetTables<E> result =
-        new CosetTables<E>(Sets.newHashSet(support), newTables);
+        new CosetTables<E>(Sets.newHashSet(support), newTables, generators);
     for (Permutation<E> g : gens)
       result.addGenerator(g);
     return immutable(result);
@@ -148,8 +158,16 @@ final class CosetTables<E> {
     return tables;
   }
 
+  public Collection<Permutation<E>> getGenerators() {
+    return generators;
+  }
+
   boolean addGenerator(Permutation<E> sigma) {
-    return filter(sigma, generatorListener);
+    if (filter(sigma, generatorListener)) {
+      generators.add(sigma);
+      return true;
+    }
+    return false;
   }
 
   boolean filter(Permutation<E> sigma, CosetTablesListener<E> listener) {
