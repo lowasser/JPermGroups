@@ -1,8 +1,10 @@
 package math.algebra.permgroup;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Equivalence;
+import com.google.common.base.Functions;
 import com.google.common.base.Objects;
 import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.HashMultimap;
@@ -16,11 +18,11 @@ import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import math.structures.FunctionMap;
 import math.structures.Partition;
 import math.structures.permutation.Permutation;
 
@@ -43,24 +45,44 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
     return current;
   }
 
-  public Collection<Set<Object>> orbits(Collection<Permutation<E>> generators) {
+  public Collection<BlockSystem<E>>
+      orbits(Collection<Permutation<E>> generators) {
     Set<Object> todo = Sets.newLinkedHashSet(blocks().keySet());
-    ImmutableList.Builder<Set<Object>> orbits = ImmutableList.builder();
+    ImmutableList.Builder<BlockSystem<E>> orbits = ImmutableList.builder();
     while (true) {
-      Set<Object> orbit = orbit(generators, todo.iterator().next());
+      BlockSystem<E> orbit = orbit(generators, todo.iterator().next());
       orbits.add(orbit);
       if (orbit.size() == todo.size())
         break;
       else
-        todo.removeAll(orbit);
+        todo.removeAll(orbit.blocks().keySet());
     }
     return orbits.build();
   }
 
-  public Set<Object> orbit(Collection<Permutation<E>> generators, Object block) {
+  public BlockSystem<E> orbit(Collection<Permutation<E>> generators,
+      Object block) {
     Set<Object> orbit = Sets.newLinkedHashSet();
     orbiter(generators, orbit, block);
-    return Collections.unmodifiableSet(orbit);
+    return subSystem(orbit);
+  }
+
+  private BlockSystem<E> subSystem(Set<Object> blocks) {
+    if (this.size() == blocks.size()) {
+      return this;
+    }
+    ImmutableSetMultimap.Builder<Object, E> subBlocksBuilder =
+        ImmutableSetMultimap.<Object, E> builder();
+    ImmutableMap.Builder<E, Object> subPartitionBuilder =
+        ImmutableMap.builder();
+    for (Object b : blocks) {
+      Set<E> block = blocks().get(b);
+      subBlocksBuilder.putAll(b, block);
+      subPartitionBuilder.putAll(new FunctionMap<E, Object>(block, Functions
+        .constant(b)));
+    }
+    return new BlockSystem<E>(subPartitionBuilder.build(),
+        subBlocksBuilder.build());
   }
 
   private void orbiter(Collection<Permutation<E>> generators,
@@ -132,6 +154,13 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
     this.partition = bimap;
     this.nBlocks = bimap.size();
     this.blocks = Multimaps.forMap(bimap.inverse());
+  }
+
+  private BlockSystem(ImmutableMap<E, Object> partition,
+      SetMultimap<Object, E> blocks) {
+    this.partition = checkNotNull(partition);
+    this.blocks = checkNotNull(blocks);
+    this.nBlocks = blocks.size();
   }
 
   private BlockSystem(Map<E, ?> partition, int nBlocks) {
