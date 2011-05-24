@@ -81,5 +81,13 @@ public abstract class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     builder.append('>');
     return builder.toString();
   }
+  
+  public boolean stabilizes(Set<E> set) {
+    for(Permutation<E> g:generators()) {
+      if(!g.stabilizes(set))
+        return false;
+    }
+    return true;
+  }
 
 }
