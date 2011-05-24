@@ -2,6 +2,7 @@ package math.structures.permutation;
 
 import com.google.common.base.Function;
 
+import java.util.Map;
 import java.util.Set;
 
 public interface Permutation<E> extends Function<E, E> {
@@ -33,4 +34,6 @@ public interface Permutation<E> extends Function<E, E> {
   public Set<E> support();
 
   public boolean isIdentity();
+
+  public Map<E, E> asMap();
 }

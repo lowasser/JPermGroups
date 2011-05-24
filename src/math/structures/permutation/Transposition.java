@@ -4,8 +4,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 
+import java.util.Map;
 import java.util.Set;
 
 final class Transposition<E> extends AbstractPermutation<E> {
@@ -41,5 +43,9 @@ final class Transposition<E> extends AbstractPermutation<E> {
 
   @Override protected Set<E> createSupport() {
     return ImmutableSet.of(a, b);
+  }
+
+  @Override Map<E, E> createAsMap() {
+    return ImmutableBiMap.of(a, b, b, a);
   }
 }

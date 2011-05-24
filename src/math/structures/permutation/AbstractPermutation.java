@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -71,7 +72,7 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
   }
 
   @Override public String toString() {
-    return new FunctionMap<E, E>(support(), this).toString();
+    return createAsMap().toString();
   }
 
   protected Parity computeParity() {
@@ -101,5 +102,15 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
 
   @Override public boolean isIdentity() {
     return support().isEmpty();
+  }
+
+  private transient Map<E, E> asMap;
+
+  @Override public Map<E, E> asMap() {
+    return (asMap == null) ? asMap = createAsMap() : asMap;
+  }
+
+  Map<E, E> createAsMap() {
+    return new FunctionMap<E, E>(support(), this);
   }
 }

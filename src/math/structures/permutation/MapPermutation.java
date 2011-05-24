@@ -17,7 +17,16 @@ class MapPermutation<E> extends AbstractPermutation<E> {
 
   MapPermutation(ImmutableBiMap<E, E> map) {
     this.map = checkNotNull(map);
-    checkArgument(map.values().equals(map.keySet()));
+    assert map.values().equals(map.keySet());
+    assert validMap();
+  }
+
+  private boolean validMap() {
+    boolean good = true;
+    for (Map.Entry<E, E> entry : map.entrySet()) {
+      good &= !Objects.equal(entry.getKey(), entry.getValue());
+    }
+    return good;
   }
 
   MapPermutation(Map<E, E> map) {
@@ -58,5 +67,9 @@ class MapPermutation<E> extends AbstractPermutation<E> {
 
   @Override protected Set<E> createSupport() {
     return map.keySet();
+  }
+
+  @Override Map<E, E> createAsMap() {
+    return map;
   }
 }

@@ -8,7 +8,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-final class InversePermutation<E> implements Permutation<E> {
+final class InversePermutation<E> extends AbstractPermutation<E> {
   private final Permutation<E> forward;
 
   InversePermutation(Permutation<E> forward) {
@@ -48,7 +48,7 @@ final class InversePermutation<E> implements Permutation<E> {
     return forward.stabilizes(s);
   }
 
-  @Override public Set<E> support() {
+  @Override protected Set<E> createSupport() {
     return forward.support();
   }
 

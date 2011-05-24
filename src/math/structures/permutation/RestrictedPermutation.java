@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableSet;
 
+import java.util.Map;
 import java.util.Set;
 
 final class RestrictedPermutation<E> extends AbstractPermutation<E> {
@@ -31,5 +32,4 @@ final class RestrictedPermutation<E> extends AbstractPermutation<E> {
   @Override protected Set<E> createSupport() {
     return support;
   }
-
 }
