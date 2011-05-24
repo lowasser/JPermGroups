@@ -105,7 +105,7 @@ final class CosetTables<E> {
   private CosetTables(Set<E> support, List<CosetTable<E>> tables) {
     this.support = support;
     this.tables = tables;
-    this.generators = Lists.newArrayList(Iterables.concat(tables));
+    this.generators = Sets.newHashSet(Iterables.concat(tables));
   }
 
   public CosetTables<E> extend(Collection<Permutation<E>> newGenerators) {
