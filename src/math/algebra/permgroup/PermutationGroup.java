@@ -35,7 +35,7 @@ public abstract class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
         newGs.add(g);
       }
     }
-    if (newGs.isEmpty()) {
+    if (newGs.size() == generators().size()) {
       return this;
     }
     return new RegularPermutationGroup<E>(newGs, CosetTables.create(newGs));
@@ -59,8 +59,9 @@ public abstract class PermutationGroup<E> extends AbstractSet<Permutation<E>> {
     if (filters.isEmpty()) {
       return this;
     }
-    return new RegularPermutationGroup<E>(CosetTables.subgroupTables(
-        generators(), filters));
+    CosetTables<E> subgroupTables = CosetTables.subgroupTables(
+        generators(), filters);
+    return new RegularPermutationGroup<E>(subgroupTables);
   }
 
   /**

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -15,7 +16,7 @@ import javax.annotation.Nullable;
 import math.structures.permutation.Permutation;
 
 final class RegularPermutationGroup<E> extends PermutationGroup<E> {
-  final CosetTables<E> cosetTables;
+  private transient CosetTables<E> cosetTables = null;
   final Collection<Permutation<E>> generators;
 
   /**
@@ -23,7 +24,7 @@ final class RegularPermutationGroup<E> extends PermutationGroup<E> {
    * generators.
    */
   RegularPermutationGroup(Collection<Permutation<E>> generators) {
-    this(generators, CosetTables.create(generators));
+    this.generators = generators;
   }
 
   /**
@@ -49,7 +50,7 @@ final class RegularPermutationGroup<E> extends PermutationGroup<E> {
     if (o instanceof Permutation) {
       @SuppressWarnings("unchecked")
       Permutation<E> p = (Permutation) o;
-      return cosetTables.generates(p);
+      return cosetTables().generates(p);
     }
     return false;
   }
@@ -80,7 +81,7 @@ final class RegularPermutationGroup<E> extends PermutationGroup<E> {
     if (newGs.isEmpty()) {
       return this;
     }
-    return new RegularPermutationGroup<E>(newGs, cosetTables.extend(newGs));
+    return new RegularPermutationGroup<E>(newGs, cosetTables().extend(newGs));
   }
 
   /**
@@ -91,18 +92,32 @@ final class RegularPermutationGroup<E> extends PermutationGroup<E> {
   }
 
   @Override public Iterator<Permutation<E>> iterator() {
-    return cosetTables.generatedIterator();
+    return cosetTables().generatedIterator();
   }
 
   @Override public int size() {
-    return cosetTables.size();
+    return cosetTables().size();
   }
+
+  private transient Set<E> support = null;
 
   @Override public Set<E> support() {
-    return cosetTables.getSupport();
+    if (support == null) {
+      if (cosetTables == null) {
+        Set<E> support = Sets.newHashSet();
+        for (Permutation<E> g : generators()) {
+          support.addAll(g.support());
+        }
+        return this.support = support;
+      } else {
+        return support = cosetTables.getSupport();
+      }
+    }
+    return support;
   }
 
-  CosetTables<E> getCosetTables() {
-    return cosetTables;
+  CosetTables<E> cosetTables() {
+    return (cosetTables == null) ? cosetTables = CosetTables.create(generators)
+        : cosetTables;
   }
 }
