@@ -1,9 +1,9 @@
 package math.structures.permutation;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Function;
-import com.google.common.base.Functions;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
@@ -13,14 +13,13 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-
-import math.structures.FunctionMap;
 
 public final class Permutations {
   private static final Permutation<Object> IDENTITY =
@@ -54,29 +53,30 @@ public final class Permutations {
       };
 
   public static <E> Permutation<E> compose(List<Permutation<E>> sigmas) {
-    Map<E, E> map = Maps.newHashMap();
-    sigmas = Lists.reverse(sigmas);
+    Map<E, E> tau = Maps.newHashMap();
     for (Permutation<E> sigma : sigmas) {
-      map.putAll(new FunctionMap<E, E>(sigma.support(), Functions
-        .<E> identity()));
-    }
-    Iterator<Entry<E, E>> entryIter = map.entrySet().iterator();
-    while (entryIter.hasNext()) {
-      Entry<E, E> entry = entryIter.next();
-      E e = entry.getKey();
-      E img = e;
-      for (Permutation<E> sigma : sigmas) {
-        img = sigma.apply(img);
-      }
-      if (Objects.equal(e, img)) {
-        entryIter.remove();
+      if (!tau.isEmpty()) {
+        List<Entry<E, E>> entryList = Lists.newArrayList();
+        for (Entry<E, E> entry : sigma.asMap().entrySet()) {
+          E e = entry.getKey();
+          E sigmaE = entry.getValue();
+          E sigmaTauE = tau.remove(sigmaE);
+          if (!Objects.equal(sigmaTauE, e)) {
+            entryList.add(Maps.immutableEntry(e, (sigmaTauE == null) ? sigmaE
+                : sigmaTauE));
+          }
+        }
+        for (Entry<E, E> entry : entryList) {
+          tau.put(entry.getKey(), entry.getValue());
+        }
       } else {
-        entry.setValue(img);
+        tau.putAll(sigma.asMap());
       }
     }
-    return new MapPermutation<E>(ImmutableBiMap.copyOf(map));
+    return new MapPermutation<E>(ImmutableBiMap.copyOf(tau));
   }
 
+  // Composing sigma with tau
   public static <E> Permutation<E> compose(Permutation<E> sigma,
       Permutation<E> tau) {
     return compose(ImmutableList.of(sigma, tau));
