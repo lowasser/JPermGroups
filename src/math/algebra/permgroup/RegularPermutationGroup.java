@@ -1,8 +1,6 @@
 package math.algebra.permgroup;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -42,8 +40,7 @@ final class RegularPermutationGroup<E> extends PermutationGroup<E> {
    * specified coset tables.
    */
   RegularPermutationGroup(CosetTables<E> cosetTables) {
-    this(ImmutableSet.copyOf(Iterables.concat(cosetTables.getTables())),
-        cosetTables);
+    this(cosetTables.getGenerators(), cosetTables);
   }
 
   @Override public boolean contains(@Nullable Object o) {
@@ -88,7 +85,7 @@ final class RegularPermutationGroup<E> extends PermutationGroup<E> {
    * Returns a collection of generators for this permutation group.
    */
   @Override public Collection<Permutation<E>> generators() {
-    return generators;
+    return (cosetTables == null) ? generators : cosetTables.getGenerators();
   }
 
   @Override public Iterator<Permutation<E>> iterator() {
