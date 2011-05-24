@@ -24,8 +24,14 @@ public final class LeftCoset<E> extends AbstractSet<Permutation<E>> {
   }
 
   public static <E> LeftCoset<E> coset(Permutation<E> sigma,
-      RegularPermutationGroup<E> group) {
+      PermutationGroup<E> group) {
     return new LeftCoset<E>(sigma, group);
+  }
+
+  public static <E> LeftCoset<E> compose(Permutation<E> sigma,
+      LeftCoset<E> coset) {
+    return coset(Permutations.compose(sigma, coset.getRepresentative()),
+        coset.getGroup());
   }
 
   private final Permutation<E> sigma;
