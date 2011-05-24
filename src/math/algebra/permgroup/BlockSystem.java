@@ -4,8 +4,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Equivalence;
+import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Objects;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableBiMap;
@@ -24,10 +26,40 @@ import java.util.Set;
 
 import math.structures.FunctionMap;
 import math.structures.Partition;
+import math.structures.permutation.AbstractPermutation;
 import math.structures.permutation.Permutation;
 
 public class BlockSystem<E> extends ForwardingMap<E, Object> implements
     Equivalence<E> {
+  private final class BlockAction extends AbstractPermutation<Object> {
+    private final Permutation<E> sigma;
+
+    BlockAction(Permutation<E> sigma) {
+      this.sigma = sigma;
+    }
+
+    @Override public Object preimage(Object b) {
+      return image(sigma.inverse(), b);
+    }
+
+    @Override public Object apply(Object b) {
+      return image(sigma, b);
+    }
+
+    @Override protected Set<Object> createSupport() {
+      Set<Object> support = Sets.newLinkedHashSet();
+      for (E e : sigma.support()) {
+        support.add(partition.get(e));
+      }
+      for (Iterator<Object> iter = support.iterator(); iter.hasNext();) {
+        Object b = iter.next();
+        if (Objects.equal(b, apply(b)))
+          iter.remove();
+      }
+      return support;
+    }
+  }
+
   private final ImmutableMap<E, Object> partition;
   private transient SetMultimap<Object, E> blocks;
   private transient int nBlocks = -1;
@@ -43,6 +75,10 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
       }
     }
     return current;
+  }
+
+  public Collection<BlockSystem<E>> orbits(PermutationGroup<E> group) {
+    return orbits(group.generators());
   }
 
   public Collection<BlockSystem<E>>
@@ -95,8 +131,10 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
   }
 
   public Object image(Permutation<E> sigma, Object block) {
-    checkArgument(blocks().containsKey(block));
-    E e = blocks().get(block).iterator().next();
+    Iterator<E> iterator = blocks().get(block).iterator();
+    if (!iterator.hasNext())
+      return block;
+    E e = iterator.next();
     E eImage = sigma.apply(e);
     return partition.get(eImage);
   }
@@ -183,6 +221,15 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
 
   @Override protected Map<E, Object> delegate() {
     return partition;
+  }
+
+  public PermutationGroup<Object> blockAction(PermutationGroup<E> g) {
+    return Groups.generateGroup(Collections2.transform(g.generators(),
+        new Function<Permutation<E>, Permutation<Object>>() {
+          @Override public Permutation<Object> apply(Permutation<E> sigma) {
+            return new BlockAction(sigma);
+          }
+        }));
   }
 
   @Override public boolean equivalent(E a, E b) {
