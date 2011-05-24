@@ -1,6 +1,7 @@
 package math.graphs.iso;
 
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.BiMap;
@@ -54,7 +55,7 @@ public class BoundedDegree {
     }
   }
 
-  public static <V1, E1, V2, E2> BiMap<V1, V2> isomorphism(
+  public static <V1, E1, V2, E2, C> BiMap<V1, V2> isomorphism(
       SimpleGraph<V1, E1> g1, SimpleGraph<V2, E2> g2) {
     int n1 = g1.vertexSet().size();
     int n2 = g2.vertexSet().size();
@@ -111,7 +112,8 @@ public class BoundedDegree {
       glued.addEdge(e2T, glue2);
       PermutationGroup<Object> aut =
           automorphismGroup(new UnmodifiableUndirectedGraph<Object, Object>(
-              glued), e0);
+              glued), e0, new MapMaker().makeComputingMap(Functions
+            .constant(new Object())));
       for (Permutation<Object> sigma : aut.generators()) {
         if (sigma.apply(glue1).equals(glue2)) {
           ImmutableBiMap.Builder<V1, V2> builder = ImmutableBiMap.builder();
@@ -132,15 +134,14 @@ public class BoundedDegree {
     return null;
   }
 
-  static <V, E> PermutationGroup<V> automorphismGroup(
-      UndirectedGraph<V, E> g0, E e0) {
+  static <C, V, E> PermutationGroup<V> automorphismGroup(
+      UndirectedGraph<V, E> g0, E e0, Map<? super V, C> vColor) {
     SimpleGraph<V, E> g = new SimpleGraph<V, E>(g0.getEdgeFactory());
     Graphs.addEdgeWithVertices(g, g0, e0);
     PermutationGroup<V> autR =
         Groups.symmetric(ImmutableSet.of(g0.getEdgeSource(e0),
             g0.getEdgeTarget(e0)));
     while (g.vertexSet().size() < g0.vertexSet().size()) {
-      System.err.println(autR);
       final SimpleGraph<V, E> gPrime =
           new SimpleGraph<V, E>(g0.getEdgeFactory());
       Graphs.addGraph(gPrime, g);
@@ -173,9 +174,9 @@ public class BoundedDegree {
           return new Color(children.get(a).size(), isEdge);
         }
       };
-      Map<Set<V>, Color> colorMap = new MapMaker().makeComputingMap(coloring);
+
       PermutationGroup<V> preservingGroup =
-          colorPreservingSubgroup(autR, children.keySet(), colorMap);
+          colorPreservingSubgroup(autR, children.keySet(), coloring);
       for (Permutation<V> sigma : preservingGroup.generators()) {
         Map<V, V> added = Maps.newHashMap();
         for (Map.Entry<Set<V>, Collection<V>> entry : children.asMap()
@@ -194,7 +195,8 @@ public class BoundedDegree {
         generators.add(Permutations.compose(sigma,
             Permutations.permutation(added)));
       }
-      autR = Groups.generateGroup(generators);
+      autR = preserving(Groups.generateGroup(generators), vColor);
+      System.err.println(autR);
       g = gPrime;
     }
     return autR;
@@ -202,14 +204,14 @@ public class BoundedDegree {
 
   private static <E> PermutationGroup<E> colorPreservingSubgroup(
       PermutationGroup<E> g, final Collection<Set<E>> aSet,
-      final Map<Set<E>, ?> coloring) {
+      final Function<Set<E>, ?> coloring) {
     return g.subgroup(new Predicate<Permutation<E>>() {
       @Override public boolean apply(Permutation<E> sigma) {
         for (Set<E> a : aSet) {
           Set<E> image = Sets.newHashSetWithExpectedSize(a.size());
           for (E e : a)
             image.add(sigma.apply(e));
-          if (!Objects.equal(coloring.get(a), coloring.get(image)))
+          if (!Objects.equal(coloring.apply(a), coloring.apply(image)))
             return false;
         }
         return true;
@@ -233,13 +235,17 @@ public class BoundedDegree {
     return builder.build();
   }
 
-  static <T> boolean
-      preserves(Permutation<T> sigma, Map<? super T, ?> coloring) {
-    for (T t : sigma.support()) {
-      if (!Objects.equal(coloring.get(t), coloring.get(sigma.apply(t)))) {
-        return false;
+  static <T> PermutationGroup<T> preserving(PermutationGroup<T> group,
+      final Map<? super T, ?> coloring) {
+    return group.subgroup(new Predicate<Permutation<T>>() {
+      @Override public boolean apply(Permutation<T> input) {
+        for (T t : input.support()) {
+          Object c = coloring.get(t);
+          if (c != null && !Objects.equal(c, coloring.get(input.apply(t))))
+            return false;
+        }
+        return true;
       }
-    }
-    return true;
+    });
   }
 }
