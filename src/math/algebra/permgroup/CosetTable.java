@@ -17,6 +17,10 @@ final class CosetTable<E> extends ForwardingSet<Permutation<E>> {
   private final Set<Permutation<E>> representatives;
   private final Predicate<? super Permutation<E>> filter;
 
+  public Predicate<? super Permutation<E>> getFilter() {
+    return filter;
+  }
+
   public static <E> CosetTable<E> stabilizingTable(int index, E stabilized) {
     return table(index, StabilizesPredicate.on(stabilized));
   }

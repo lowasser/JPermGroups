@@ -27,10 +27,6 @@ public final class Groups {
           return ImmutableList.of();
         }
 
-        @Override public Set<Object> support() {
-          return ImmutableSet.of();
-        }
-
         @Override public Iterator<Permutation<Object>> iterator() {
           return Iterators.singletonIterator(identity());
         }

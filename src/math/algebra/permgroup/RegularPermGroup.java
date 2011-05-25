@@ -1,5 +1,6 @@
 package math.algebra.permgroup;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -99,5 +100,18 @@ class RegularPermGroup<E> extends AbstractPermGroup<E> {
   CosetTables<E> cosetTables() {
     return (cosetTables == null) ? cosetTables = CosetTables.create(generators)
         : cosetTables;
+  }
+
+  @Override public PermSubgroup<E> subgroup(
+      Collection<? extends Predicate<? super Permutation<E>>> filters) {
+    if (cosetTables != null) {
+      CosetTables<E> tables =
+          CosetTables.subgroupTables(cosetTables, generators(), filters);
+      PermGroup<E> subgroup =
+          new RegularPermGroup<E>(tables.drop(filters.size()));
+      Collection<Permutation<E>> reps = tables.take(filters.size()).generated();
+      return new SubgroupView<E>(reps, subgroup, this);
+    }
+    return super.subgroup(filters);
   }
 }

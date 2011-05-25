@@ -62,7 +62,11 @@ public abstract class AbstractPermGroup<E> extends AbstractSet<Permutation<E>>
    */
   @Override public PermSubgroup<E> subgroup(
       Collection<? extends Predicate<? super Permutation<E>>> filters) {
-    return RegularPermSubgroup.subgroup(this, filters);
+    CosetTables<E> tables = CosetTables.subgroupTables(this, filters);
+    PermGroup<E> subgroup =
+        new RegularPermGroup<E>(tables.drop(filters.size()));
+    Collection<Permutation<E>> reps = tables.take(filters.size()).generated();
+    return new SubgroupView<E>(reps, subgroup, this);
   }
 
   /* (non-Javadoc)

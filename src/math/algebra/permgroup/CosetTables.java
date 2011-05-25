@@ -33,7 +33,21 @@ final class CosetTables<E> {
       create(Collection<Permutation<E>> generators) {
     CosetTables<E> tables = new CosetTables<E>();
     for (Permutation<E> g : generators) {
-      tables.addGenerator(g);
+      tables.addGenerator(g, true);
+    }
+    return immutable(tables);
+  }
+
+  public static <E> CosetTables<E> subgroupTables(CosetTables<E> currentTables,
+      Iterable<? extends Permutation<E>> generators,
+      Collection<? extends Predicate<? super Permutation<E>>> filters) {
+    CosetTables<E> tables = new CosetTables<E>();
+    for (Predicate<? super Permutation<E>> filter : filters)
+      tables.addTable(filter);
+    for (CosetTable<E> table : currentTables.tables)
+      tables.addTable(table.getFilter());
+    for (Permutation<E> g : generators) {
+      tables.addGenerator(g, false);
     }
     return immutable(tables);
   }
@@ -45,7 +59,7 @@ final class CosetTables<E> {
     for (Predicate<? super Permutation<E>> filter : filters)
       tables.addTable(filter);
     for (Permutation<E> g : generators) {
-      tables.addGenerator(g);
+      tables.addGenerator(g, true);
     }
     return immutable(tables);
   }
@@ -87,7 +101,8 @@ final class CosetTables<E> {
             news.add(compose(tau, sigma));
           }
           for (Permutation<E> tau : news) {
-            filter(tau, this);
+            // we never get anything new in the support
+            filter(tau, this, false);
           }
         }
       };
@@ -131,7 +146,7 @@ final class CosetTables<E> {
     CosetTables<E> result =
         new CosetTables<E>(Sets.newHashSet(support), newTables, generators);
     for (Permutation<E> g : gens)
-      result.addGenerator(g);
+      result.addGenerator(g, true);
     return immutable(result);
   }
 
@@ -167,18 +182,21 @@ final class CosetTables<E> {
     return generators;
   }
 
-  boolean addGenerator(Permutation<E> sigma) {
-    if (filter(sigma, generatorListener)) {
+  boolean addGenerator(Permutation<E> sigma, boolean addTables) {
+    if (filter(sigma, generatorListener, addTables)) {
       generators.add(sigma);
       return true;
     }
     return false;
   }
 
-  boolean filter(Permutation<E> sigma, CosetTablesListener<E> listener) {
-    for (E e : sigma.support()) {
-      if (support.add(e)) {
-        addStabilizingTable(e);
+  boolean filter(Permutation<E> sigma, CosetTablesListener<E> listener,
+      boolean addTables) {
+    if (addTables) {
+      for (E e : sigma.support()) {
+        if (support.add(e)) {
+          addStabilizingTable(e);
+        }
       }
     }
 
