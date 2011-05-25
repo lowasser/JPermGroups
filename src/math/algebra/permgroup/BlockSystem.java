@@ -84,12 +84,11 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
   public static <E> BlockSystem<E> minimalBlockSystem(PermGroup<E> g,
       Set<E> domain) {
     BlockSystem<E> current = new BlockSystem<E>(domain);
-    for (E a : domain) {
-      for (E b : domain) {
-        BlockSystem<E> tmp = refine(g.generators(), current, a, b);
-        if (!tmp.isTrivial())
-          current = tmp;
-      }
+    E a = domain.iterator().next();
+    for (E b : domain) {
+      BlockSystem<E> tmp = refine(g.generators(), current, a, b);
+      if (!tmp.isTrivial())
+        current = tmp;
     }
     return current;
   }

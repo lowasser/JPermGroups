@@ -18,6 +18,7 @@ public class Subsets<E> extends AbstractSet<Set<E>> {
   private final ImmutableMap<E, Integer> domain;
 
   public static <E> Set<Set<E>> subsetsOfSizeAtMost(Set<E> set, int k) {
+    k = Math.min(k, set.size());
     checkPositionIndex(k, set.size());
     ImmutableMap.Builder<E, Integer> builder = ImmutableMap.builder();
     int i = 0;

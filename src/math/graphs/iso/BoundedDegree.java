@@ -139,6 +139,7 @@ public class BoundedDegree {
     PermGroup<V> autR =
         Groups.symmetric(ImmutableSet.of(g0.getEdgeSource(e0),
             g0.getEdgeTarget(e0)));
+    System.err.println(autR);
     while (g.vertexSet().size() < g0.vertexSet().size()) {
       final SimpleGraph<V, E> gPrime =
           new SimpleGraph<V, E>(g0.getEdgeFactory());
@@ -163,7 +164,10 @@ public class BoundedDegree {
           generators.addAll(Groups.symmetric(matesC).generators());
         }
       }
+      System.err.println("Symmetric: " + generators);
 
+      System.err.println(children);
+      
       Function<Set<V>, Color> aColor = new Function<Set<V>, Color>() {
         @Override public Color apply(Set<V> a) {
           boolean isEdge = a.size() == 2;
@@ -181,6 +185,7 @@ public class BoundedDegree {
           ColorPreserving.colorPreserving(
               Groups.actionOnSetsOfSizeAtMost(autR, max), children.keySet(),
               Colorings.coloring(aColor));
+      System.err.println("Preserving: " + preservingGroup);
       for (Permutation<Set<V>> sigma : preservingGroup.generators()) {
         Map<V, V> added = Maps.newHashMap();
         for (Map.Entry<Set<V>, Collection<V>> entry : children.asMap()

@@ -2,6 +2,7 @@ package math.structures;
 
 import com.google.common.base.Equivalence;
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -50,6 +51,7 @@ public final class Colorings {
       ImmutableSet.Builder<E> color = ImmutableSet.builder();
       Iterator<E> iter = todo.iterator();
       E a = iter.next();
+      iter.remove();
       color.add(a);
       while (iter.hasNext()) {
         E b = iter.next();
@@ -73,5 +75,9 @@ public final class Colorings {
         return Objects.hashCode(colorFunc.apply(e));
       }
     };
+  }
+
+  public static <E> Equivalence<E> coloring(Map<E, ?> colorMap) {
+    return coloring(Functions.forMap(colorMap));
   }
 }
