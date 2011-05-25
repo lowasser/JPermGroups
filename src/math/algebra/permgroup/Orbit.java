@@ -28,10 +28,6 @@ public final class Orbit<E> extends ForwardingSet<E> {
     return orbit(e, group.generators());
   }
 
-  public static <E> Collection<Orbit<E>> orbits(PermGroup<E> group) {
-    return orbits(group, group.support());
-  }
-
   public static <E> Collection<Orbit<E>> orbits(PermGroup<E> group,
       Set<E> set) {
     ImmutableList.Builder<Orbit<E>> builder = ImmutableList.builder();

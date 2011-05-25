@@ -33,8 +33,6 @@ public interface PermGroup<E> extends Set<Permutation<E>> {
   public abstract PermGroup<E> subgroup(
       Predicate<? super Permutation<E>> filter);
 
-  public abstract Set<E> support();
-
   public abstract boolean stabilizes(Set<E> set);
 
 }

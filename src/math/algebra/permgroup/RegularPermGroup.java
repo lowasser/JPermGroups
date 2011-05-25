@@ -96,23 +96,6 @@ class RegularPermGroup<E> extends AbstractPermGroup<E> {
     return cosetTables().size();
   }
 
-  private transient Set<E> support = null;
-
-  @Override public Set<E> support() {
-    if (support == null) {
-      if (cosetTables == null) {
-        Set<E> support = Sets.newHashSet();
-        for (Permutation<E> g : generators()) {
-          support.addAll(g.support());
-        }
-        return this.support = support;
-      } else {
-        return support = cosetTables.getSupport();
-      }
-    }
-    return support;
-  }
-
   CosetTables<E> cosetTables() {
     return (cosetTables == null) ? cosetTables = CosetTables.create(generators)
         : cosetTables;

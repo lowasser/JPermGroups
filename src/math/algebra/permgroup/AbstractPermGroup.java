@@ -73,11 +73,6 @@ public abstract class AbstractPermGroup<E> extends AbstractSet<Permutation<E>>
     return subgroup(Collections.singletonList(filter));
   }
 
-  /* (non-Javadoc)
-   * @see math.algebra.permgroup.PermutationGroup#support()
-   */
-  @Override public abstract Set<E> support();
-
   @Override public String toString() {
     Collection<Permutation<E>> generators = generators();
     StringBuilder builder = new StringBuilder(generators.size() * 10);

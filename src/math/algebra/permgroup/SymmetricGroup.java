@@ -38,10 +38,6 @@ final class SymmetricGroup<E> extends AbstractPermGroup<E> {
     return generators;
   }
 
-  @Override public Set<E> support() {
-    return domain;
-  }
-
   @Override public Iterator<Permutation<E>> iterator() {
     return new AbstractIterator<Permutation<E>>() {
       BigInteger i = BigInteger.ZERO;
