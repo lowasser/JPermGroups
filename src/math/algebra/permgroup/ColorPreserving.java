@@ -1,7 +1,6 @@
 package math.algebra.permgroup;
 
-import com.google.common.base.Function;
-import com.google.common.base.Objects;
+import com.google.common.base.Equivalence;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -19,8 +18,14 @@ public final class ColorPreserving {
   private ColorPreserving() {
   }
 
-  public static <E, C> LCoset<E> colorPreserving(
-      @Nullable LCoset<E> sigmaG, Set<E> bSet, Function<E, C> coloring) {
+  public static <E, C> PermGroup<E> colorPreserving(PermGroup<E> g,
+      Set<E> domain, Equivalence<E> coloring) {
+    return colorPreserving(new LCoset<E>(Permutations.<E> identity(), g),
+        domain, coloring).getGroup();
+  }
+
+  private static <E, C> LCoset<E> colorPreserving(@Nullable LCoset<E> sigmaG,
+      Set<E> bSet, Equivalence<E> coloring) {
     if (sigmaG == null) {
       return null;
     }
@@ -29,10 +34,8 @@ public final class ColorPreserving {
     assert g.stabilizes(bSet);
     if (bSet.size() == 1) {
       E b = bSet.iterator().next();
-      C bColor = coloring.apply(b);
       E bImage = sigma.apply(b);
-      C bImageColor = coloring.apply(bImage);
-      return Objects.equal(bColor, bImageColor) ? sigmaG : null;
+      return coloring.equivalent(b, bImage) ? sigmaG : null;
     }
 
     Collection<Orbit<E>> orbits = Orbit.orbits(g, bSet);

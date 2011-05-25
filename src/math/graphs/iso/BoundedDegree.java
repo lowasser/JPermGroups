@@ -1,9 +1,7 @@
 package math.graphs.iso;
 
+import com.google.common.base.Equivalence;
 import com.google.common.base.Function;
-import com.google.common.base.Functions;
-import com.google.common.base.Objects;
-import com.google.common.base.Predicate;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableBiMap;
@@ -11,7 +9,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.MapMaker;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
@@ -25,8 +22,10 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import math.algebra.permgroup.ColorPreserving;
 import math.algebra.permgroup.Groups;
 import math.algebra.permgroup.PermGroup;
+import math.structures.Colorings;
 import math.structures.permutation.Permutation;
 import math.structures.permutation.Permutations;
 
@@ -112,8 +111,7 @@ public class BoundedDegree {
       glued.addEdge(e2T, glue2);
       PermGroup<Object> aut =
           automorphismGroup(new UnmodifiableUndirectedGraph<Object, Object>(
-              glued), e0, new MapMaker().makeComputingMap(Functions
-            .constant(new Object())));
+              glued), e0, Colorings.NON_COLORING);
       for (Permutation<Object> sigma : aut.generators()) {
         if (sigma.apply(glue1).equals(glue2)) {
           ImmutableBiMap.Builder<V1, V2> builder = ImmutableBiMap.builder();
@@ -134,8 +132,8 @@ public class BoundedDegree {
     return null;
   }
 
-  static <C, V, E> PermGroup<V> automorphismGroup(
-      UndirectedGraph<V, E> g0, E e0, Map<? super V, C> vColor) {
+  static <V, E> PermGroup<V> automorphismGroup(UndirectedGraph<V, E> g0, E e0,
+      Equivalence<? super V> vColoring) {
     SimpleGraph<V, E> g = new SimpleGraph<V, E>(g0.getEdgeFactory());
     Graphs.addEdgeWithVertices(g, g0, e0);
     PermGroup<V> autR =
@@ -158,11 +156,15 @@ public class BoundedDegree {
           ImmutableSetMultimap.copyOf(Multimaps.invertFrom(
               Multimaps.forMap(parent), HashMultimap.<Set<V>, V> create()));
       List<Permutation<V>> generators = Lists.newArrayList();
+      int max = 1;
       for (Collection<V> siblingsC : children.asMap().values()) {
-        generators.addAll(Groups.symmetric((Set<V>) siblingsC).generators());
+        max = Math.max(max, siblingsC.size());
+        for (Set<V> matesC : Colorings.colors((Set<V>) siblingsC, vColoring)) {
+          generators.addAll(Groups.symmetric(matesC).generators());
+        }
       }
 
-      Function<Set<V>, Color> coloring = new Function<Set<V>, Color>() {
+      Function<Set<V>, Color> aColor = new Function<Set<V>, Color>() {
         @Override public Color apply(Set<V> a) {
           boolean isEdge = a.size() == 2;
           if (isEdge) {
@@ -175,16 +177,16 @@ public class BoundedDegree {
         }
       };
 
-      PermGroup<V> preservingGroup =
-          colorPreservingSubgroup(autR, children.keySet(), coloring);
-      for (Permutation<V> sigma : preservingGroup.generators()) {
+      PermGroup<Set<V>> preservingGroup =
+          ColorPreserving.colorPreserving(
+              Groups.actionOnSetsOfSizeAtMost(autR, max), children.keySet(),
+              Colorings.coloring(aColor));
+      for (Permutation<Set<V>> sigma : preservingGroup.generators()) {
         Map<V, V> added = Maps.newHashMap();
         for (Map.Entry<Set<V>, Collection<V>> entry : children.asMap()
           .entrySet()) {
           Set<V> a = entry.getKey();
-          Set<V> aImage = Sets.newHashSet();
-          for (V v : a)
-            aImage.add(sigma.apply(v));
+          Set<V> aImage = sigma.apply(a);
           assert children.get(aImage).size() == entry.getValue().size();
           Iterator<V> aImKidsIter = children.get(aImage).iterator();
           Iterator<V> aKidsIter = entry.getValue().iterator();
@@ -192,31 +194,16 @@ public class BoundedDegree {
             added.put(aKidsIter.next(), aImKidsIter.next());
           }
         }
-        generators.add(Permutations.compose(sigma,
-            Permutations.permutation(added)));
+        for (V v : g.vertexSet()) {
+          added.put(v, sigma.apply(ImmutableSet.of(v)).iterator().next());
+        }
+        generators.add(Permutations.permutation(added));
       }
-      autR = preserving(Groups.generateGroup(generators), vColor);
+      autR = Groups.generateGroup(generators);
       System.err.println(autR);
       g = gPrime;
     }
     return autR;
-  }
-
-  private static <E> PermGroup<E> colorPreservingSubgroup(
-      PermGroup<E> g, final Collection<Set<E>> aSet,
-      final Function<Set<E>, ?> coloring) {
-    return g.subgroup(new Predicate<Permutation<E>>() {
-      @Override public boolean apply(Permutation<E> sigma) {
-        for (Set<E> a : aSet) {
-          Set<E> image = Sets.newHashSetWithExpectedSize(a.size());
-          for (E e : a)
-            image.add(sigma.apply(e));
-          if (!Objects.equal(coloring.apply(a), coloring.apply(image)))
-            return false;
-        }
-        return true;
-      }
-    });
   }
 
   private static <V, E> void extend(Graph<V, E> g0, Graph<V, E> g) {
@@ -233,19 +220,5 @@ public class BoundedDegree {
       builder.put(t, new Object());
     }
     return builder.build();
-  }
-
-  static <T> PermGroup<T> preserving(PermGroup<T> group,
-      final Map<? super T, ?> coloring) {
-    return group.subgroup(new Predicate<Permutation<T>>() {
-      @Override public boolean apply(Permutation<T> input) {
-        for (T t : input.support()) {
-          Object c = coloring.get(t);
-          if (c != null && !Objects.equal(c, coloring.get(input.apply(t))))
-            return false;
-        }
-        return true;
-      }
-    });
   }
 }
