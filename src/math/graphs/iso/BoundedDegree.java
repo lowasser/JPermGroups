@@ -26,7 +26,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import math.algebra.permgroup.Groups;
-import math.algebra.permgroup.PermutationGroup;
+import math.algebra.permgroup.PermGroup;
 import math.structures.permutation.Permutation;
 import math.structures.permutation.Permutations;
 
@@ -110,7 +110,7 @@ public class BoundedDegree {
       Object e2T = rep2.get(g2.getEdgeTarget(e2));
       glued.addEdge(e2S, glue2);
       glued.addEdge(e2T, glue2);
-      PermutationGroup<Object> aut =
+      PermGroup<Object> aut =
           automorphismGroup(new UnmodifiableUndirectedGraph<Object, Object>(
               glued), e0, new MapMaker().makeComputingMap(Functions
             .constant(new Object())));
@@ -134,11 +134,11 @@ public class BoundedDegree {
     return null;
   }
 
-  static <C, V, E> PermutationGroup<V> automorphismGroup(
+  static <C, V, E> PermGroup<V> automorphismGroup(
       UndirectedGraph<V, E> g0, E e0, Map<? super V, C> vColor) {
     SimpleGraph<V, E> g = new SimpleGraph<V, E>(g0.getEdgeFactory());
     Graphs.addEdgeWithVertices(g, g0, e0);
-    PermutationGroup<V> autR =
+    PermGroup<V> autR =
         Groups.symmetric(ImmutableSet.of(g0.getEdgeSource(e0),
             g0.getEdgeTarget(e0)));
     while (g.vertexSet().size() < g0.vertexSet().size()) {
@@ -175,7 +175,7 @@ public class BoundedDegree {
         }
       };
 
-      PermutationGroup<V> preservingGroup =
+      PermGroup<V> preservingGroup =
           colorPreservingSubgroup(autR, children.keySet(), coloring);
       for (Permutation<V> sigma : preservingGroup.generators()) {
         Map<V, V> added = Maps.newHashMap();
@@ -202,8 +202,8 @@ public class BoundedDegree {
     return autR;
   }
 
-  private static <E> PermutationGroup<E> colorPreservingSubgroup(
-      PermutationGroup<E> g, final Collection<Set<E>> aSet,
+  private static <E> PermGroup<E> colorPreservingSubgroup(
+      PermGroup<E> g, final Collection<Set<E>> aSet,
       final Function<Set<E>, ?> coloring) {
     return g.subgroup(new Predicate<Permutation<E>>() {
       @Override public boolean apply(Permutation<E> sigma) {
@@ -235,7 +235,7 @@ public class BoundedDegree {
     return builder.build();
   }
 
-  static <T> PermutationGroup<T> preserving(PermutationGroup<T> group,
+  static <T> PermGroup<T> preserving(PermGroup<T> group,
       final Map<? super T, ?> coloring) {
     return group.subgroup(new Predicate<Permutation<T>>() {
       @Override public boolean apply(Permutation<T> input) {

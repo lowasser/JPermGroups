@@ -64,7 +64,7 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
   private transient SetMultimap<Object, E> blocks;
   private transient int nBlocks = -1;
 
-  public static <E> BlockSystem<E> minimalBlockSystem(PermutationGroup<E> g,
+  public static <E> BlockSystem<E> minimalBlockSystem(PermGroup<E> g,
       Set<E> domain, int p) {
     BlockSystem<E> current = new BlockSystem<E>(domain);
     for (E a : domain) {
@@ -79,7 +79,7 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
     return current;
   }
 
-  public static <E> BlockSystem<E> minimalBlockSystem(PermutationGroup<E> g,
+  public static <E> BlockSystem<E> minimalBlockSystem(PermGroup<E> g,
       Set<E> domain) {
     BlockSystem<E> current = new BlockSystem<E>(domain);
     for (E a : domain) {
@@ -92,7 +92,7 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
     return current;
   }
 
-  public Collection<BlockSystem<E>> orbits(PermutationGroup<E> group) {
+  public Collection<BlockSystem<E>> orbits(PermGroup<E> group) {
     return orbits(group.generators());
   }
 
@@ -238,7 +238,7 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
     return partition;
   }
 
-  public PermutationGroup<Object> blockAction(PermutationGroup<E> g) {
+  public PermGroup<Object> blockAction(PermGroup<E> g) {
     return Groups.generateGroup(Collections2.transform(g.generators(),
         new Function<Permutation<E>, Permutation<Object>>() {
           @Override public Permutation<Object> apply(Permutation<E> sigma) {

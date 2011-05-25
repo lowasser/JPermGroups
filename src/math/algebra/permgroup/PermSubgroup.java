@@ -4,10 +4,10 @@ import java.util.Collection;
 
 import math.structures.permutation.Permutation;
 
-public interface Subgroup<E> extends PermutationGroup<E> {
+public interface PermSubgroup<E> extends PermGroup<E> {
   public abstract Collection<Permutation<E>> cosetRepresentatives();
 
-  public abstract PermutationGroup<E> superGroup();
+  public abstract PermGroup<E> superGroup();
 
   public abstract int index();
 }

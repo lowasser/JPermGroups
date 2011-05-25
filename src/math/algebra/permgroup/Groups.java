@@ -21,8 +21,8 @@ import math.structures.permutation.Permutation.Parity;
 import math.structures.permutation.Permutations;
 
 public final class Groups {
-  private static final PermutationGroup<Object> TRIVIAL_GROUP =
-      new AbstractPermutationGroup<Object>() {
+  private static final PermGroup<Object> TRIVIAL_GROUP =
+      new AbstractPermGroup<Object>() {
         @Override public Collection<Permutation<Object>> generators() {
           return ImmutableList.of();
         }
@@ -47,23 +47,23 @@ public final class Groups {
         }
       };
 
-  public static <E> PermutationGroup<E> alternating(Set<E> domain) {
+  public static <E> PermGroup<E> alternating(Set<E> domain) {
     if (domain.size() <= 2)
       return trivial();
     return symmetric(domain).subgroup(EVEN_PREDICATE);
   }
 
-  public static <E> PermutationGroup<E> generateGroup(
+  public static <E> PermGroup<E> generateGroup(
       Collection<Permutation<E>> generators) {
-    return new RegularPermutationGroup<E>(generators);
+    return new RegularPermGroup<E>(generators);
   }
 
-  public static <E> PermutationGroup<E> generateGroup(
+  public static <E> PermGroup<E> generateGroup(
       Permutation<E>... generators) {
     return generateGroup(Arrays.asList(generators));
   }
 
-  public static <E> PermutationGroup<E> restrict(PermutationGroup<E> group,
+  public static <E> PermGroup<E> restrict(PermGroup<E> group,
       Set<E> b) {
     for (Permutation<E> g : group.generators()) {
       assert g.stabilizes(b);
@@ -76,18 +76,18 @@ public final class Groups {
     return generateGroup(generators);
   }
 
-  @SuppressWarnings("unchecked") public static <E> PermutationGroup<E>
+  @SuppressWarnings("unchecked") public static <E> PermGroup<E>
       trivial() {
-    return (PermutationGroup<E>) TRIVIAL_GROUP;
+    return (PermGroup<E>) TRIVIAL_GROUP;
   }
 
-  public static <E> PermutationGroup<E> symmetric(Set<E> domain) {
+  public static <E> PermGroup<E> symmetric(Set<E> domain) {
     if (domain.size() <= 1)
       return trivial();
     return new SymmetricGroup<E>(domain);
   }
 
-  private static <E> PermutationGroup<E> symmetric(ImmutableSet<E> domain) {
+  private static <E> PermGroup<E> symmetric(ImmutableSet<E> domain) {
     if (domain.size() <= 1) {
       return trivial();
     }

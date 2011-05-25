@@ -24,7 +24,7 @@ public final class LeftCoset<E> extends AbstractSet<Permutation<E>> {
   }
 
   public static <E> LeftCoset<E> coset(Permutation<E> sigma,
-      AbstractPermutationGroup<E> group) {
+      AbstractPermGroup<E> group) {
     return new LeftCoset<E>(sigma, group);
   }
 
@@ -38,7 +38,7 @@ public final class LeftCoset<E> extends AbstractSet<Permutation<E>> {
 
   private final Collection<Permutation<E>> generators;
 
-  private transient PermutationGroup<E> group;
+  private transient PermGroup<E> group;
 
   private LeftCoset(Permutation<E> sigma, Collection<Permutation<E>> generators) {
     this.sigma = sigma;
@@ -46,14 +46,14 @@ public final class LeftCoset<E> extends AbstractSet<Permutation<E>> {
   }
 
   private LeftCoset(Permutation<E> sigma,
-      Collection<Permutation<E>> generators, RegularPermutationGroup<E> group) {
+      Collection<Permutation<E>> generators, RegularPermGroup<E> group) {
     this.sigma = checkNotNull(sigma);
     this.generators = ImmutableList.copyOf(generators);
     this.group = checkNotNull(group);
     checkArgument(group.containsAll(generators));
   }
 
-  private LeftCoset(Permutation<E> sigma, RegularPermutationGroup<E> group) {
+  private LeftCoset(Permutation<E> sigma, RegularPermGroup<E> group) {
     this(sigma, group.generators(), group);
   }
 
@@ -77,8 +77,8 @@ public final class LeftCoset<E> extends AbstractSet<Permutation<E>> {
       return Objects.equal(group, coset.group)
           && group.contains(Permutations.compose(sigma.inverse(),
               (Permutation) coset.sigma));
-    } else if (o instanceof RegularPermutationGroup) {
-      RegularPermutationGroup<?> g = (RegularPermutationGroup<?>) o;
+    } else if (o instanceof RegularPermGroup) {
+      RegularPermGroup<?> g = (RegularPermGroup<?>) o;
       return Objects.equal(group, g) && group.contains(sigma);
     } else {
       return super.equals(o);
@@ -89,7 +89,7 @@ public final class LeftCoset<E> extends AbstractSet<Permutation<E>> {
     return generators;
   }
 
-  public PermutationGroup<E> getGroup() {
+  public PermGroup<E> getGroup() {
     return (group == null) ? group = Groups.generateGroup(generators) : group;
   }
 

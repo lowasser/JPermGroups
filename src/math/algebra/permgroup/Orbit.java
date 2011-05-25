@@ -24,15 +24,15 @@ public final class Orbit<E> extends ForwardingSet<E> {
     return orbit(e, ImmutableList.of(sigma));
   }
 
-  public static <E> Orbit<E> orbit(E e, PermutationGroup<E> group) {
+  public static <E> Orbit<E> orbit(E e, PermGroup<E> group) {
     return orbit(e, group.generators());
   }
 
-  public static <E> Collection<Orbit<E>> orbits(PermutationGroup<E> group) {
+  public static <E> Collection<Orbit<E>> orbits(PermGroup<E> group) {
     return orbits(group, group.support());
   }
 
-  public static <E> Collection<Orbit<E>> orbits(PermutationGroup<E> group,
+  public static <E> Collection<Orbit<E>> orbits(PermGroup<E> group,
       Set<E> set) {
     ImmutableList.Builder<Orbit<E>> builder = ImmutableList.builder();
     Set<E> todo = Sets.newLinkedHashSet(set);

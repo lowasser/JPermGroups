@@ -8,7 +8,7 @@ import junit.framework.TestCase;
 import math.structures.permutation.Permutation;
 import math.structures.permutation.Permutations;
 
-public class PermutationGroupTests extends TestCase {
+public class PermGroupTests extends TestCase {
   private final ImmutableSet<Integer> domainP = ImmutableSet.of(1, 2, 3, 4);
   private final ImmutableSet<Integer> domainQ = ImmutableSet.of(5, 6, 7);
   private final ImmutableSet<Integer> domainPQ = ImmutableSet
@@ -25,7 +25,7 @@ public class PermutationGroupTests extends TestCase {
   private final Permutation<Integer> pq1 = Permutations.compose(p2, q1);
 
   @SuppressWarnings("unchecked") public void testCyclicGroup1() {
-    PermutationGroup<Integer> group1 = Groups.generateGroup(p1);
+    PermGroup<Integer> group1 = Groups.generateGroup(p1);
     assertEquals(2, group1.size());
     assertTrue(group1.contains(Permutations.identity()));
     assertTrue(group1.contains(p1));
@@ -33,7 +33,7 @@ public class PermutationGroupTests extends TestCase {
   }
 
   @SuppressWarnings("unchecked") public void testCyclicGroup2() {
-    PermutationGroup<Integer> group2 = Groups.generateGroup(p2);
+    PermGroup<Integer> group2 = Groups.generateGroup(p2);
     assertEquals(3, group2.size());
     assertTrue(group2.contains(Permutations.identity()));
     assertFalse(group2.contains(p1));
@@ -41,7 +41,7 @@ public class PermutationGroupTests extends TestCase {
   }
 
   @SuppressWarnings("unchecked") public void testGroup12() {
-    PermutationGroup<Integer> group12 = Groups.generateGroup(p1, p2);
+    PermGroup<Integer> group12 = Groups.generateGroup(p1, p2);
     assertEquals(6, group12.size());
     assertTrue(group12.contains(Permutations.identity()));
     assertTrue(group12.contains(p1));
@@ -50,9 +50,9 @@ public class PermutationGroupTests extends TestCase {
   }
 
   @SuppressWarnings("unchecked") public void testSubgroup() {
-    PermutationGroup<Integer> group1 = Groups.generateGroup(p1);
-    PermutationGroup<Integer> group2 = Groups.generateGroup(p2);
-    PermutationGroup<Integer> group12 = Groups.generateGroup(p1, p2);
+    PermGroup<Integer> group1 = Groups.generateGroup(p1);
+    PermGroup<Integer> group2 = Groups.generateGroup(p2);
+    PermGroup<Integer> group12 = Groups.generateGroup(p1, p2);
     assertTrue(group1.isSubgroupOf(group12));
     assertTrue(group2.isSubgroupOf(group12));
     assertTrue(group12.isSubgroupOf(group12));
@@ -62,8 +62,8 @@ public class PermutationGroupTests extends TestCase {
   }
 
   @SuppressWarnings("unchecked") public void testSubgroupPredicate() {
-    PermutationGroup<Integer> group1 = Groups.generateGroup(p1);
-    PermutationGroup<Integer> group12 = Groups.generateGroup(p1, p2);
+    PermGroup<Integer> group1 = Groups.generateGroup(p1);
+    PermGroup<Integer> group12 = Groups.generateGroup(p1, p2);
     Predicate<Permutation<Integer>> stabilizes3 =
         new Predicate<Permutation<Integer>>() {
 

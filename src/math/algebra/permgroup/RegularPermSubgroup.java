@@ -6,19 +6,19 @@ import java.util.Collection;
 
 import math.structures.permutation.Permutation;
 
-final class RegularSubgroup<E> extends RegularPermutationGroup<E> implements
-    Subgroup<E> {
-  private final PermutationGroup<E> superGroup;
+final class RegularPermSubgroup<E> extends RegularPermGroup<E> implements
+    PermSubgroup<E> {
+  private final PermGroup<E> superGroup;
   private final CosetTables<E> cosetRepTables;
 
-  static <E> RegularSubgroup<E> subgroup(PermutationGroup<E> group,
+  static <E> RegularPermSubgroup<E> subgroup(PermGroup<E> group,
       Collection<? extends Predicate<? super Permutation<E>>> filters) {
     CosetTables<E> tables =
         CosetTables.subgroupTables(group.generators(), filters);
-    return new RegularSubgroup<E>(group, tables, filters.size());
+    return new RegularPermSubgroup<E>(group, tables, filters.size());
   }
 
-  private RegularSubgroup(PermutationGroup<E> superGroup,
+  private RegularPermSubgroup(PermGroup<E> superGroup,
       CosetTables<E> tables, int nFilters) {
     super(tables.drop(nFilters));
     this.cosetRepTables = tables.take(nFilters);
@@ -26,7 +26,7 @@ final class RegularSubgroup<E> extends RegularPermutationGroup<E> implements
     assert check(tables, superGroup);
   }
 
-  private boolean check(CosetTables<E> tables, PermutationGroup<E> group) {
+  private boolean check(CosetTables<E> tables, PermGroup<E> group) {
     boolean good = tables.generated().size() == group.size();
     for (Permutation<E> sigma : group.generators()) {
       good &= tables.generates(sigma);
@@ -38,7 +38,7 @@ final class RegularSubgroup<E> extends RegularPermutationGroup<E> implements
     return cosetRepTables.generated();
   }
 
-  @Override public PermutationGroup<E> superGroup() {
+  @Override public PermGroup<E> superGroup() {
     return superGroup;
   }
 
