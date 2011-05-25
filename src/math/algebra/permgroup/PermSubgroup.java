@@ -11,5 +11,5 @@ public interface PermSubgroup<E> extends PermGroup<E> {
 
   public abstract int index();
 
-  public abstract Collection<LeftCoset<E>> asCosets();
+  public abstract Collection<LCoset<E>> asCosets();
 }

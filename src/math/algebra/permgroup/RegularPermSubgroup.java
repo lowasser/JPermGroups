@@ -48,11 +48,11 @@ final class RegularPermSubgroup<E> extends RegularPermGroup<E> implements
     return cosetRepresentatives().size();
   }
 
-  @Override public Collection<LeftCoset<E>> asCosets() {
+  @Override public Collection<LCoset<E>> asCosets() {
     return Collections2.transform(cosetRepresentatives(),
-        new Function<Permutation<E>, LeftCoset<E>>() {
-          @Override public LeftCoset<E> apply(Permutation<E> sigma) {
-            return LeftCoset.coset(sigma, RegularPermSubgroup.this);
+        new Function<Permutation<E>, LCoset<E>>() {
+          @Override public LCoset<E> apply(Permutation<E> sigma) {
+            return new LCoset<E>(sigma, RegularPermSubgroup.this);
           }
         });
   }

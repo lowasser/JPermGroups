@@ -56,8 +56,8 @@ class RegularPermGroup<E> extends AbstractPermGroup<E> {
       Collection<?> c) {
     if (c instanceof RegularPermGroup) {
       return ((RegularPermGroup) c).isSubgroupOf(this);
-    } else if (c instanceof LeftCoset) {
-      LeftCoset<?> coset = (LeftCoset<?>) c;
+    } else if (c instanceof LCoset) {
+      LCoset<?> coset = (LCoset<?>) c;
       return containsAll(coset.getGroup())
           && contains(coset.getRepresentative());
     }

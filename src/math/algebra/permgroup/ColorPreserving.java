@@ -20,8 +20,8 @@ public final class ColorPreserving {
   private ColorPreserving() {
   }
 
-  public static <E, C> LeftCoset<E> colorPreserving(
-      @Nullable LeftCoset<E> sigmaG, Set<E> bSet, Function<E, C> coloring) {
+  public static <E, C> LCoset<E> colorPreserving(
+      @Nullable LCoset<E> sigmaG, Set<E> bSet, Function<E, C> coloring) {
     if (sigmaG == null) {
       return null;
     }
@@ -38,7 +38,7 @@ public final class ColorPreserving {
 
     Collection<Orbit<E>> orbits = Orbit.orbits(g, bSet);
     if (orbits.size() > 1) {
-      LeftCoset<E> answer = sigmaG;
+      LCoset<E> answer = sigmaG;
       for (Orbit<E> orbit : orbits) {
         answer = colorPreserving(answer, orbit, coloring);
         if (answer == null)
@@ -49,20 +49,20 @@ public final class ColorPreserving {
 
     BlockSystem<E> system = BlockSystem.minimalBlockSystem(g, bSet);
     PermSubgroup<E> stabilizingSubgroup = system.stabilizingSubgroup(g);
-    Collection<LeftCoset<E>> colorPreservers = Lists.newArrayList();
-    for (LeftCoset<E> coset : stabilizingSubgroup.asCosets()) {
+    Collection<LCoset<E>> colorPreservers = Lists.newArrayList();
+    for (LCoset<E> coset : stabilizingSubgroup.asCosets()) {
       colorPreservers.add(colorPreserving(coset, bSet, coloring));
     }
     return glue(colorPreservers);
   }
 
-  static <E> LeftCoset<E> glue(Collection<LeftCoset<E>> cosets) {
+  static <E> LCoset<E> glue(Collection<LCoset<E>> cosets) {
     Collection<Permutation<E>> generators = Lists.newArrayList();
-    Iterator<LeftCoset<E>> cosetIterator =
+    Iterator<LCoset<E>> cosetIterator =
         Iterables.filter(cosets, Predicates.notNull()).iterator();
     if (!cosetIterator.hasNext())
       return null;
-    LeftCoset<E> c1 = cosetIterator.next();
+    LCoset<E> c1 = cosetIterator.next();
     Permutation<E> rho1 = c1.getRepresentative();
     PermGroup<E> h = c1.getGroup();
     generators.addAll(h.generators());
@@ -70,6 +70,6 @@ public final class ColorPreserving {
       generators.add(Permutations.compose(rho1.inverse(), cosetIterator.next()
         .getRepresentative()));
     }
-    return LeftCoset.coset(rho1, generators);
+    return new LCoset<E>(rho1, generators);
   }
 }
