@@ -1,6 +1,8 @@
 package math.algebra.permgroup;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 
 import java.util.Collection;
 
@@ -44,5 +46,14 @@ final class RegularPermSubgroup<E> extends RegularPermGroup<E> implements
 
   @Override public int index() {
     return cosetRepresentatives().size();
+  }
+
+  @Override public Collection<LeftCoset<E>> asCosets() {
+    return Collections2.transform(cosetRepresentatives(),
+        new Function<Permutation<E>, LeftCoset<E>>() {
+          @Override public LeftCoset<E> apply(Permutation<E> sigma) {
+            return LeftCoset.coset(sigma, RegularPermSubgroup.this);
+          }
+        });
   }
 }

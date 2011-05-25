@@ -25,7 +25,7 @@ public interface PermGroup<E> extends Set<Permutation<E>> {
    * Returns the subgroup of elements satisfying all of the specified filters.
    */
   public abstract PermSubgroup<E> subgroup(
-      List<? extends Predicate<? super Permutation<E>>> filters);
+      Collection<? extends Predicate<? super Permutation<E>>> filters);
 
   /**
    * Returns the subgroup of elements satisfying the specified filter.

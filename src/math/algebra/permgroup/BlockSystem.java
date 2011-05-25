@@ -7,6 +7,7 @@ import com.google.common.base.Equivalence;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.HashMultimap;
@@ -14,6 +15,7 @@ import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
@@ -21,6 +23,7 @@ import com.google.common.collect.Sets;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -257,5 +260,17 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
     Object b = get(e);
     checkArgument(b != null);
     return b.hashCode();
+  }
+
+  public PermSubgroup<E> stabilizingSubgroup(PermGroup<E> g) {
+    Collection<Predicate<Permutation<E>>> filters = Lists.newArrayList();
+    for (final Object block : blocks().keySet()) {
+      filters.add(new Predicate<Permutation<E>>() {
+        @Override public boolean apply(Permutation<E> sigma) {
+          return Objects.equal(block, image(sigma, block));
+        }
+      });
+    }
+    return g.subgroup(filters);
   }
 }

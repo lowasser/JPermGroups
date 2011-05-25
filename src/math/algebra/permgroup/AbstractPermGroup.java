@@ -14,8 +14,8 @@ import javax.annotation.Nullable;
 
 import math.structures.permutation.Permutation;
 
-public abstract class AbstractPermGroup<E> extends
-    AbstractSet<Permutation<E>> implements PermGroup<E> {
+public abstract class AbstractPermGroup<E> extends AbstractSet<Permutation<E>>
+    implements PermGroup<E> {
   @Override public boolean equals(@Nullable Object o) {
     if (o instanceof AbstractPermGroup) {
       @SuppressWarnings("unchecked")
@@ -28,8 +28,7 @@ public abstract class AbstractPermGroup<E> extends
   /* (non-Javadoc)
    * @see math.algebra.permgroup.PermutationGroup#extend(java.lang.Iterable)
    */
-  @Override public PermGroup<E> extend(
-      Iterable<Permutation<E>> newGenerators) {
+  @Override public PermGroup<E> extend(Iterable<Permutation<E>> newGenerators) {
     List<Permutation<E>> newGs = Lists.newArrayList(generators());
     for (Permutation<E> g : newGenerators) {
       if (!contains(g)) {
@@ -62,7 +61,7 @@ public abstract class AbstractPermGroup<E> extends
    * @see math.algebra.permgroup.PermutationGroup#subgroup(java.util.List)
    */
   @Override public PermSubgroup<E> subgroup(
-      List<? extends Predicate<? super Permutation<E>>> filters) {
+      Collection<? extends Predicate<? super Permutation<E>>> filters) {
     return RegularPermSubgroup.subgroup(this, filters);
   }
 
