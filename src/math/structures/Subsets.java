@@ -35,6 +35,10 @@ public class Subsets<E> extends AbstractSet<Set<E>> {
   private class Subset extends AbstractSet<E> {
     private int[] indices;
 
+    private ImmutableMap<E, Integer> domain() {
+      return domain;
+    }
+
     private Subset(int[] indices, int k) {
       checkPositionIndex(k, indices.length);
       this.indices = new int[k];
@@ -44,6 +48,16 @@ public class Subsets<E> extends AbstractSet<Set<E>> {
     @Override public boolean contains(@Nullable Object o) {
       int i = getIndex(o);
       return i >= 0 && Arrays.binarySearch(indices, i) >= 0;
+    }
+
+    @Override public boolean equals(@Nullable Object o) {
+      if (o instanceof Subsets.Subset) {
+        Subsets<?>.Subset s = (Subsets<?>.Subset) o;
+        if (domain == s.domain()) {
+          return Arrays.equals(indices, s.indices);
+        }
+      }
+      return super.equals(o);
     }
 
     @Override public Iterator<E> iterator() {
@@ -78,7 +92,7 @@ public class Subsets<E> extends AbstractSet<Set<E>> {
         kk = 0;
         indices[0] = domain.size();
         return ImmutableSet.of();
-      } 
+      }
       for (int i = kk - 1; i >= 0; i--) {
         if (indices[i] + 1 < indices[i + 1]) {
           indices[i]++;

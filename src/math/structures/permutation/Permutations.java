@@ -136,6 +136,11 @@ public final class Permutations {
     return permutation(map);
   }
 
+  public static <E> Permutation<Set<E>> actionOnSetsOfSize(
+      Permutation<E> sigma, int k) {
+    return new SetAction<E>(sigma, k);
+  }
+
   private Permutations() {
   }
 }
