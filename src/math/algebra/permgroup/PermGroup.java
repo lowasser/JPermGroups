@@ -3,7 +3,6 @@ package math.algebra.permgroup;
 import com.google.common.base.Predicate;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 
 import math.structures.permutation.Permutation;
