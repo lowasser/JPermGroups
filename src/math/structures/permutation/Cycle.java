@@ -31,6 +31,10 @@ final class Cycle<E> extends MapPermutation<E> {
     return s.isEmpty() || s.containsAll(support());
   }
 
+  @Override protected int computeOrder() {
+    return cycle.size();
+  }
+
   @Override protected math.structures.permutation.Permutation.Parity
       computeParity() {
     return ((cycle.size() & 1) == 0) ? Parity.ODD : Parity.EVEN; // not a typo

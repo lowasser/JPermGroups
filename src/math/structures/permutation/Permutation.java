@@ -36,4 +36,6 @@ public interface Permutation<E> extends Function<E, E> {
   public boolean isIdentity();
 
   public Map<E, E> asMap();
+
+  public int order();
 }

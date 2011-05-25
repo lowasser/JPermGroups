@@ -55,4 +55,8 @@ final class InversePermutation<E> extends AbstractPermutation<E> {
   @Override public boolean isIdentity() {
     return forward.isIdentity();
   }
+
+  @Override protected int computeOrder() {
+    return forward.order();
+  }
 }

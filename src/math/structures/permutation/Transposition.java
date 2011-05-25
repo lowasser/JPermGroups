@@ -25,6 +25,18 @@ final class Transposition<E> extends AbstractPermutation<E> {
     return Objects.equal(e, a) ? b : Objects.equal(e, b) ? a : e;
   }
 
+  @Override public int order() {
+    return 2;
+  }
+
+  @Override public Parity parity() {
+    return Parity.ODD;
+  }
+
+  @Override public boolean isIdentity() {
+    return false;
+  }
+
   @Override public Permutation<E> inverse() {
     return this;
   }

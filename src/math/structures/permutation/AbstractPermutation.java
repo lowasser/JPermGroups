@@ -10,6 +10,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import math.algebra.permgroup.Orbit;
 import math.structures.FunctionMap;
 
 public abstract class AbstractPermutation<E> implements Permutation<E> {
@@ -17,6 +18,7 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
   transient Permutation<E> inverse = null;
   private transient Integer hashCode = null;
   transient Parity parity = null;
+  private transient int order = -1;
 
   @Override public boolean equals(@Nullable Object obj) {
     if (obj == this) {
@@ -112,5 +114,45 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
 
   Map<E, E> createAsMap() {
     return new FunctionMap<E, E>(support(), this);
+  }
+
+  @Override public int order() {
+    if (order >= 0)
+      return order;
+    return order = computeOrder();
+  }
+
+  protected int computeOrder() {
+    int order = 1;
+    Set<E> todo = Sets.newLinkedHashSet(support());
+    while (!todo.isEmpty()) {
+      int k = 0;
+      for (E e = todo.iterator().next(); todo.remove(e); e = apply(e)) {
+        k++;
+      }
+      order = lcm(order, k);
+    }
+    return order;
+  }
+
+  static int lcm(int a, int b) {
+    b /= gcd(a, b);
+    return a * b;
+  }
+
+  static int gcd(int a, int b) {
+    a = Math.abs(a);
+    b = Math.abs(b);
+    if (a < b) {
+      int tmp = a;
+      a = b;
+      b = tmp;
+    }
+    while (b > 0) {
+      int tmp = a % b;
+      a = b;
+      b = tmp;
+    }
+    return a;
   }
 }
