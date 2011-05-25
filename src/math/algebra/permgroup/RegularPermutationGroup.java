@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 
 import math.structures.permutation.Permutation;
 
-final class RegularPermutationGroup<E> extends PermutationGroup<E> {
+class RegularPermutationGroup<E> extends AbstractPermutationGroup<E> {
   private transient CosetTables<E> cosetTables = null;
   final Collection<Permutation<E>> generators;
 

@@ -65,6 +65,21 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
   private transient int nBlocks = -1;
 
   public static <E> BlockSystem<E> minimalBlockSystem(PermutationGroup<E> g,
+      Set<E> domain, int p) {
+    BlockSystem<E> current = new BlockSystem<E>(domain);
+    for (E a : domain) {
+      for (E b : domain) {
+        BlockSystem<E> tmp = refine(g.generators(), current, a, b);
+        if (!tmp.isTrivial())
+          current = tmp;
+        if (current.size() == p)
+          break;
+      }
+    }
+    return current;
+  }
+
+  public static <E> BlockSystem<E> minimalBlockSystem(PermutationGroup<E> g,
       Set<E> domain) {
     BlockSystem<E> current = new BlockSystem<E>(domain);
     for (E a : domain) {

@@ -9,15 +9,6 @@ import java.util.List;
 import math.numbertheory.Factorization.Factor;
 
 public final class Factorization extends ForwardingList<Factor> {
-  private static final BitSet SMALL_PRIMES = new BitSet(1000);
-  static {
-    SMALL_PRIMES.set(2, 1000);
-    for (int i = 2; i * i < 1000; i = SMALL_PRIMES.nextSetBit(i + 1)) {
-      for (int j = 2 * i; j < 1000; j += i)
-        SMALL_PRIMES.clear(j);
-    }
-  }
-
   public static final class Factor {
     private final int prime;
     private final int exponent;
@@ -28,12 +19,12 @@ public final class Factorization extends ForwardingList<Factor> {
       this.exponent = exponent;
     }
 
-    public int getPrime() {
-      return prime;
-    }
-
     public int getExponent() {
       return exponent;
+    }
+
+    public int getPrime() {
+      return prime;
     }
 
     public int getProduct() {
@@ -48,8 +39,9 @@ public final class Factorization extends ForwardingList<Factor> {
             case 1:
               return product = base * acc;
             default:
-              if ((exp & 1) != 0)
+              if ((exp & 1) != 0) {
                 acc *= base;
+              }
               base *= base;
               exp >>= 1;
           }
@@ -58,7 +50,6 @@ public final class Factorization extends ForwardingList<Factor> {
       return product;
     }
   }
-  
   private static final class FactoredOut {
     private int factor;
     private int exponent;
@@ -68,6 +59,17 @@ public final class Factorization extends ForwardingList<Factor> {
       this.factor = factor;
       this.exponent = exponent;
       this.quotient = quotient;
+    }
+  }
+
+  private static final BitSet SMALL_PRIMES = new BitSet(1000);
+
+  static {
+    SMALL_PRIMES.set(2, 1000);
+    for (int i = 2; i * i < 1000; i = SMALL_PRIMES.nextSetBit(i + 1)) {
+      for (int j = 2 * i; j < 1000; j += i) {
+        SMALL_PRIMES.clear(j);
+      }
     }
   }
 
@@ -88,14 +90,16 @@ public final class Factorization extends ForwardingList<Factor> {
         n = factored.quotient;
       }
     }
-    if (n > 1)
+    if (n > 1) {
       builder.add(new Factor(n, 1));
+    }
     return new Factorization(builder.build(), n0);
   }
 
   private static FactoredOut factorOut(int n, int p) {
-    if (n % p != 0)
+    if (n % p != 0) {
       return new FactoredOut(p, 0, n);
+    }
     FactoredOut f = factorOut(n, p * p);
     f.factor = p;
     f.exponent *= 2;

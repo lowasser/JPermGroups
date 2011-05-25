@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 import math.structures.permutation.Permutation;
 import math.structures.permutation.Permutations;
 
-final class SymmetricGroup<E> extends PermutationGroup<E> {
+final class SymmetricGroup<E> extends AbstractPermutationGroup<E> {
   private final ImmutableSet<E> domain;
   private transient Collection<Permutation<E>> generators;
   private final BigInteger size;

@@ -22,7 +22,7 @@ import math.structures.permutation.Permutations;
 
 public final class Groups {
   private static final PermutationGroup<Object> TRIVIAL_GROUP =
-      new PermutationGroup<Object>() {
+      new AbstractPermutationGroup<Object>() {
         @Override public Collection<Permutation<Object>> generators() {
           return ImmutableList.of();
         }

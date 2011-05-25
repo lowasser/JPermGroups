@@ -40,19 +40,24 @@ final class CosetTables<E> {
 
   public static <E> CosetTables<E> subgroupTables(
       Iterable<? extends Permutation<E>> generators,
-      List<? extends Predicate<? super Permutation<E>>> filters) {
+      Collection<? extends Predicate<? super Permutation<E>>> filters) {
     CosetTables<E> tables = new CosetTables<E>();
     for (Predicate<? super Permutation<E>> filter : filters)
       tables.addTable(filter);
     for (Permutation<E> g : generators) {
       tables.addGenerator(g);
     }
-    return immutable(tables.drop(filters.size()));
+    return immutable(tables);
   }
 
   public CosetTables<E> drop(int k) {
     checkPositionIndex(k, tables.size());
     return new CosetTables<E>(support, tables.subList(k, tables.size()));
+  }
+
+  public CosetTables<E> take(int k) {
+    checkPositionIndex(k, tables.size());
+    return new CosetTables<E>(support, tables.subList(0, k));
   }
 
   public static <E> CosetTables<E> immutable(CosetTables<E> cTables) {
@@ -200,7 +205,7 @@ final class CosetTables<E> {
     tables.add(CosetTable.table(tables.size(), filter));
   }
 
-  private Collection<Permutation<E>> generated() {
+  Collection<Permutation<E>> generated() {
     if (generated == null) {
       Set<List<Permutation<E>>> factors = Sets.cartesianProduct(tables);
       Function<List<Permutation<E>>, Permutation<E>> composer =

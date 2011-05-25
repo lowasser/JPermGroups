@@ -17,8 +17,8 @@ import math.numbertheory.Factorization.Factor;
 import math.structures.permutation.Permutation;
 
 public class SylowDecomposition<E> {
-  public static <E> SylowDecomposition<E>
-      sylow(RegularPermutationGroup<E> group) {
+  public static <E> SylowDecomposition<E> sylow(AbstractPermutationGroup<E> group,
+      BlockSystem<E> system) {
     Factorization factorization = Factorization.factorize(group.size());
     Ordering<Factor> biggestComponent = new Ordering<Factor>() {
       @Override public int compare(Factor left, Factor right) {
@@ -26,12 +26,12 @@ public class SylowDecomposition<E> {
       }
     };
     Factor biggestFactor = biggestComponent.max(factorization);
-    return sylow(group, biggestFactor.getPrime());
+    return sylow(group, system, biggestFactor.getPrime());
   }
 
-  public static <E> SylowDecomposition<E> sylow(
-      RegularPermutationGroup<E> group, int p) {
-    return new SylowDecomposition<E>(group, p);
+  public static <E> SylowDecomposition<E> sylow(AbstractPermutationGroup<E> group,
+      BlockSystem<E> system, int p) {
+    return new SylowDecomposition<E>(group, system, p);
   }
 
   private static int factorOut(int n, int p) {
@@ -42,19 +42,20 @@ public class SylowDecomposition<E> {
     return n;
   }
 
-  private static boolean isPGroup(PermutationGroup<?> g, int p) {
-    return factorOut(g.size(), p) == 1;
-  }
+  private AbstractPermutationGroup<E> sylowSubgroup;
 
-  private PermutationGroup<E> sylowSubgroup;
   private List<Permutation<E>> cosetRepresentatives;
+
   private final int p;
   private final PermutationGroup<E> group;
+  private final BlockSystem<E> blockSystem;
 
-  private SylowDecomposition(PermutationGroup<E> group, int p) {
+  private SylowDecomposition(AbstractPermutationGroup<E> group,
+      BlockSystem<E> blockSystem, int p) {
     this.sylowSubgroup = Groups.trivial();
     this.cosetRepresentatives =
         Lists.newArrayListWithCapacity(factorOut(group.size(), p));
+    this.blockSystem = blockSystem;
     this.p = p;
     this.group = group;
     for (Permutation<E> g : group.generators()) {
@@ -86,13 +87,21 @@ public class SylowDecomposition<E> {
     return cosetRepresentatives;
   }
 
+  public int getP() {
+    return p;
+  }
+
   public PermutationGroup<E> getSylowSubgroup() {
     return sylowSubgroup;
   }
 
+  private boolean isPGroup(PermutationGroup<E> g, int p) {
+    return factorOut(blockSystem.blockAction(g).size(), p) == 1;
+  }
+
   private void pBuild(Permutation<E> alpha) {
     for (Permutation<E> gamma : cosetRepresentatives) {
-      PermutationGroup<E> tmp =
+      AbstractPermutationGroup<E> tmp =
           sylowSubgroup
             .extend(ImmutableList.of(compose(gamma.inverse(), alpha)));
       if (isPGroup(tmp, p)) {

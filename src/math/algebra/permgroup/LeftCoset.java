@@ -24,7 +24,7 @@ public final class LeftCoset<E> extends AbstractSet<Permutation<E>> {
   }
 
   public static <E> LeftCoset<E> coset(Permutation<E> sigma,
-      PermutationGroup<E> group) {
+      AbstractPermutationGroup<E> group) {
     return new LeftCoset<E>(sigma, group);
   }
 
