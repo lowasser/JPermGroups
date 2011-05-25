@@ -10,7 +10,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import math.algebra.permgroup.Orbit;
 import math.structures.FunctionMap;
 
 public abstract class AbstractPermutation<E> implements Permutation<E> {

@@ -38,7 +38,6 @@ public final class LCoset<E> extends AbstractSet<Permutation<E>> {
     this.sigma = checkNotNull(sigma);
     this.generators = ImmutableList.copyOf(group.generators());
     this.group = checkNotNull(group);
-    checkArgument(group.containsAll(generators));
   }
 
   @SuppressWarnings("unchecked") @Override public boolean contains(

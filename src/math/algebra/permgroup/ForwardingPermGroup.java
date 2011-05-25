@@ -15,12 +15,20 @@ abstract class ForwardingPermGroup<E> extends
     return delegate().extend(newGenerators);
   }
 
+  @Override public PermGroup<E> extend(PermGroup<E> h) {
+    return delegate().extend(h);
+  }
+
   @Override public Collection<Permutation<E>> generators() {
     return delegate().generators();
   }
 
   @Override public boolean isSubgroupOf(PermGroup<E> g) {
     return delegate().isSubgroupOf(g);
+  }
+
+  @Override public boolean stabilizes(Set<E> set) {
+    return delegate().stabilizes(set);
   }
 
   @Override public PermSubgroup<E> subgroup(
@@ -31,10 +39,6 @@ abstract class ForwardingPermGroup<E> extends
   @Override public PermGroup<E> subgroup(
       Predicate<? super Permutation<E>> filter) {
     return delegate().subgroup(filter);
-  }
-
-  @Override public boolean stabilizes(Set<E> set) {
-    return delegate().stabilizes(set);
   }
 
   @Override protected abstract PermGroup<E> delegate();

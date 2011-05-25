@@ -144,7 +144,8 @@ final class CosetTables<E> {
       newTables.add(CosetTable.mutableCopy(table));
     }
     CosetTables<E> result =
-        new CosetTables<E>(Sets.newHashSet(support), newTables, generators);
+        new CosetTables<E>(Sets.newHashSet(support), newTables,
+            Lists.newArrayList(generators));
     for (Permutation<E> g : gens)
       result.addGenerator(g, true);
     return immutable(result);

@@ -38,10 +38,10 @@ public final class ColorPreserving {
       return coloring.equivalent(b, bImage) ? sigmaG : null;
     }
 
-    Collection<Orbit<E>> orbits = Orbit.orbits(g, bSet);
+    Collection<Set<E>> orbits = Orbits.orbits(g, bSet);
     if (orbits.size() > 1) {
       LCoset<E> answer = sigmaG;
-      for (Orbit<E> orbit : orbits) {
+      for (Set<E> orbit : orbits) {
         answer = colorPreserving(answer, orbit, coloring);
         if (answer == null)
           break;

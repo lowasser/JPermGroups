@@ -3,10 +3,12 @@ package math.algebra.permgroup;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import java.math.BigInteger;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -69,34 +71,17 @@ final class SymmetricGroup<E> extends AbstractPermGroup<E> {
   }
 
   private Permutation<E> unrank(BigInteger d) {
-    int k = d.bitLength();
-    int[] t = new int[2 << k];
-    for (int i = 0; i <= k; i++) {
-      for (int j = 0; (j >> i) == 0; j++) {
-        t[(1 << i) + j] = 1 << (k - i);
-      }
+    List<E> output = Lists.newArrayList(domain.asList());
+    for (int n = output.size(); d.signum() > 0; n--) {
+      BigInteger[] quotRem = d.divideAndRemainder(BigInteger.valueOf(n));
+      Collections.swap(output, n - 1, quotRem[1].intValue());
+      d = quotRem[0];
     }
-    int n = domain.size();
-    Map<E, E> map = Maps.newHashMap();
-    for (int i = 0; i < n; i++) {
-      BigInteger[] divideAndRemainder =
-          d.divideAndRemainder(BigInteger.valueOf(n - i));
-      int digit = divideAndRemainder[1].intValue();
-      d = divideAndRemainder[0];
-      int node = 1;
-      for (int j = 0; j < k; j++) {
-        t[node]--;
-        node <<= 1;
-        if (digit >= t[node]) {
-          digit -= t[node];
-          node++;
-        }
-      }
-      t[node] = 0;
-      List<E> dom = domain.asList();
-      map.put(dom.get(i), dom.get(node - (1 << k)));
+    Map<E, E> perm = Maps.newHashMapWithExpectedSize(output.size());
+    for (int i = 0; i < output.size(); i++) {
+      perm.put(domain.asList().get(i), output.get(i));
     }
-    return Permutations.permutation(map);
+    return Permutations.permutation(perm);
   }
 
   @Override public int size() {

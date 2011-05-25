@@ -41,6 +41,10 @@ public abstract class AbstractPermGroup<E> extends AbstractSet<Permutation<E>>
     return new RegularPermGroup<E>(newGs, CosetTables.create(newGs));
   }
 
+  @Override public PermGroup<E> extend(PermGroup<E> h) {
+    return extend(h.generators());
+  }
+
   /* (non-Javadoc)
    * @see math.algebra.permgroup.PermutationGroup#generators()
    */
@@ -55,6 +59,17 @@ public abstract class AbstractPermGroup<E> extends AbstractSet<Permutation<E>>
    */
   @Override public boolean isSubgroupOf(PermGroup<E> g) {
     return size() <= g.size() && g.containsAll(generators());
+  }
+
+  /* (non-Javadoc)
+   * @see math.algebra.permgroup.PermutationGroup#stabilizes(java.util.Set)
+   */
+  @Override public boolean stabilizes(Set<E> set) {
+    for (Permutation<E> g : generators()) {
+      if (!g.stabilizes(set))
+        return false;
+    }
+    return true;
   }
 
   /* (non-Javadoc)
@@ -84,17 +99,6 @@ public abstract class AbstractPermGroup<E> extends AbstractSet<Permutation<E>>
     Joiner.on(", ").appendTo(builder, generators);
     builder.append('>');
     return builder.toString();
-  }
-
-  /* (non-Javadoc)
-   * @see math.algebra.permgroup.PermutationGroup#stabilizes(java.util.Set)
-   */
-  @Override public boolean stabilizes(Set<E> set) {
-    for (Permutation<E> g : generators()) {
-      if (!g.stabilizes(set))
-        return false;
-    }
-    return true;
   }
 
 }
