@@ -43,6 +43,11 @@ public final class Groups {
         }
       };
 
+  public static <E> PermGroup<Set<E>> actionOnSetsOfSizeAtMost(PermGroup<E> g,
+      int k) {
+    return new GroupAction<E>(g, k);
+  }
+
   public static <E> PermGroup<E> alternating(Set<E> domain) {
     if (domain.size() <= 2)
       return trivial();
@@ -54,13 +59,11 @@ public final class Groups {
     return new RegularPermGroup<E>(generators);
   }
 
-  public static <E> PermGroup<E> generateGroup(
-      Permutation<E>... generators) {
+  public static <E> PermGroup<E> generateGroup(Permutation<E>... generators) {
     return generateGroup(Arrays.asList(generators));
   }
 
-  public static <E> PermGroup<E> restrict(PermGroup<E> group,
-      Set<E> b) {
+  public static <E> PermGroup<E> restrict(PermGroup<E> group, Set<E> b) {
     for (Permutation<E> g : group.generators()) {
       assert g.stabilizes(b);
     }
@@ -72,15 +75,14 @@ public final class Groups {
     return generateGroup(generators);
   }
 
-  @SuppressWarnings("unchecked") public static <E> PermGroup<E>
-      trivial() {
-    return (PermGroup<E>) TRIVIAL_GROUP;
-  }
-
   public static <E> PermGroup<E> symmetric(Set<E> domain) {
     if (domain.size() <= 1)
       return trivial();
     return new SymmetricGroup<E>(domain);
+  }
+
+  @SuppressWarnings("unchecked") public static <E> PermGroup<E> trivial() {
+    return (PermGroup<E>) TRIVIAL_GROUP;
   }
 
   private static <E> PermGroup<E> symmetric(ImmutableSet<E> domain) {
