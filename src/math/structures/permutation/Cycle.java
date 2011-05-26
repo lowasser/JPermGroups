@@ -24,11 +24,11 @@ final class Cycle<E> extends MapPermutation<E> {
   }
 
   @Override public boolean stabilizes(E e) {
-    return !support().contains(e);
+    return !domain().contains(e);
   }
 
   @Override public boolean stabilizes(Set<E> s) {
-    return s.isEmpty() || s.containsAll(support());
+    return s.isEmpty() || s.containsAll(domain());
   }
 
   @Override protected int computeOrder() {

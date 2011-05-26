@@ -9,6 +9,7 @@ import com.google.common.collect.Maps;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -37,7 +38,7 @@ public class PermutationTests extends TestCase {
 
   public void testComposition(Permutation<Integer> p, Permutation<Integer> q) {
     Permutation<Integer> pq = compose(p, q);
-    for (Integer i : Iterables.concat(p.support(), q.support())) {
+    for (Integer i : Iterables.concat(p.domain(), q.domain())) {
       assertEquals(p.apply(q.apply(i)), pq.apply(i));
     }
   }

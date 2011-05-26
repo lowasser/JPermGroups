@@ -5,11 +5,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
-class MapPermutation<E> extends AbstractPermutation<E> {
+public class MapPermutation<E> extends AbstractPermutation<E> {
   /**
    * Must not map any element to itself.
    */
@@ -45,7 +49,7 @@ class MapPermutation<E> extends AbstractPermutation<E> {
 
   MapPermutation(Permutation<E> sigma) {
     ImmutableBiMap.Builder<E, E> builder = ImmutableBiMap.builder();
-    for (E e : checkNotNull(sigma).support()) {
+    for (E e : checkNotNull(sigma).domain()) {
       builder.put(e, sigma.apply(e));
     }
     this.map = builder.build();
@@ -65,11 +69,61 @@ class MapPermutation<E> extends AbstractPermutation<E> {
     return (result == null) ? e : result;
   }
 
-  @Override protected Set<E> createSupport() {
+  @Override protected Set<E> createDomain() {
     return map.keySet();
   }
 
-  @Override Map<E, E> createAsMap() {
+  @Override protected Map<E, E> createAsMap() {
     return map;
+  }
+
+  @Override public Permutation<E> compose(Permutation<E> tau) {
+    if (tau.isIdentity()) {
+      return this;
+    }
+    Map<E, E> sigmaMap = Maps.newHashMap(asMap());
+    ImmutableBiMap.Builder<E, E> builder = ImmutableBiMap.builder();
+    for (Map.Entry<E, E> entry : tau.asMap().entrySet()) {
+      E e = entry.getKey();
+      E tauE = entry.getValue();
+      E sigmaTauE = sigmaMap.remove(tauE);
+      if (sigmaTauE == null) {
+        sigmaTauE = tauE;
+      }
+      if (!Objects.equal(e, sigmaTauE)) {
+        builder.put(e, sigmaTauE);
+      }
+    }
+    builder.putAll(sigmaMap);
+    return new MapPermutation<E>(builder.build());
+  }
+
+  @Override public Permutation<E> compose(List<Permutation<E>> taus) {
+    Map<E, E> tau = Maps.newHashMap(asMap());
+    for (Permutation<E> sigma : taus) {
+      if (!tau.isEmpty()) {
+        List<Entry<E, E>> entryList = Lists.newArrayList();
+        for (Entry<E, E> entry : sigma.asMap().entrySet()) {
+          E e = entry.getKey();
+          E sigmaE = entry.getValue();
+          E sigmaTauE = tau.remove(sigmaE);
+          if (!Objects.equal(sigmaTauE, e)) {
+            entryList.add(Maps.immutableEntry(e, (sigmaTauE == null) ? sigmaE
+                : sigmaTauE));
+          }
+        }
+        for (Entry<E, E> entry : entryList) {
+          tau.put(entry.getKey(), entry.getValue());
+        }
+      } else {
+        tau.putAll(sigma.asMap());
+      }
+    }
+    return new MapPermutation<E>(tau);
+  }
+
+  @Override protected Permutation<E> inverseCompose(List<Permutation<E>> taus) {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

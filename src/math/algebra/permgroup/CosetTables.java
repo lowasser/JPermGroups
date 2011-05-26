@@ -126,6 +126,7 @@ final class CosetTables<E> {
     this.support = support;
     this.tables = tables;
     this.generators = Sets.newHashSet(Iterables.concat(tables));
+    this.generators.remove(Permutations.identity());
   }
 
   public CosetTables<E> extend(Collection<Permutation<E>> newGenerators) {
@@ -194,7 +195,7 @@ final class CosetTables<E> {
   boolean filter(Permutation<E> sigma, CosetTablesListener<E> listener,
       boolean addTables) {
     if (addTables) {
-      for (E e : sigma.support()) {
+      for (E e : sigma.domain()) {
         if (support.add(e)) {
           addStabilizingTable(e);
         }

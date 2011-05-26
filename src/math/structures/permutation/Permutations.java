@@ -7,13 +7,12 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -28,9 +27,17 @@ public final class Permutations {
           return checkNotNull(o);
         }
 
+        @Override public Permutation<Object> compose(Permutation<Object> tau) {
+          return tau;
+        }
+
+        @Override public Set<Object> domain() {
+          return ImmutableSet.of();
+        }
+
         @Override public boolean equals(@Nullable Object obj) {
           if (obj instanceof Permutation) {
-            return ((Permutation<?>) obj).support().isEmpty();
+            return ((Permutation<?>) obj).domain().isEmpty();
           }
           return false;
         }
@@ -43,37 +50,57 @@ public final class Permutations {
           return this;
         }
 
+        @Override public boolean isIdentity() {
+          return true;
+        }
+
+        @Override public int order() {
+          return 1;
+        }
+
+        @Override public Parity parity() {
+          return Parity.EVEN;
+        }
+
         @Override public Object preimage(Object o) {
           return checkNotNull(o);
         }
 
-        @Override protected Set<Object> createSupport() {
+        @Override public boolean stabilizes(Object o) {
+          return true;
+        }
+
+        @Override public boolean stabilizes(Set<Object> s) {
+          return true;
+        }
+
+        @Override protected Map<Object, Object> createAsMap() {
+          return ImmutableMap.of();
+        }
+
+        @Override protected Set<Object> createDomain() {
           return ImmutableSet.of();
+        }
+
+        @Override public Permutation<Object> compose(
+            List<Permutation<Object>> taus) {
+          return Permutations.compose(taus);
+        }
+
+        @Override protected Permutation<Object> inverseCompose(
+            List<Permutation<Object>> taus) {
+          return Permutations.compose(taus);
         }
       };
 
   public static <E> Permutation<E> compose(List<Permutation<E>> sigmas) {
-    Map<E, E> tau = Maps.newHashMap();
-    for (Permutation<E> sigma : sigmas) {
-      if (!tau.isEmpty()) {
-        List<Entry<E, E>> entryList = Lists.newArrayList();
-        for (Entry<E, E> entry : sigma.asMap().entrySet()) {
-          E e = entry.getKey();
-          E sigmaE = entry.getValue();
-          E sigmaTauE = tau.remove(sigmaE);
-          if (!Objects.equal(sigmaTauE, e)) {
-            entryList.add(Maps.immutableEntry(e, (sigmaTauE == null) ? sigmaE
-                : sigmaTauE));
-          }
-        }
-        for (Entry<E, E> entry : entryList) {
-          tau.put(entry.getKey(), entry.getValue());
-        }
-      } else {
-        tau.putAll(sigma.asMap());
-      }
+    if (sigmas.isEmpty()) {
+      return identity();
     }
-    return new MapPermutation<E>(ImmutableBiMap.copyOf(tau));
+    Permutation<E> sigma = sigmas.get(0);
+    if(sigmas.size() == 1)
+      return sigma;
+    return sigma.compose(sigmas.subList(1, sigmas.size()));
   }
 
   // Composing sigma with tau
@@ -101,28 +128,10 @@ public final class Permutations {
     return (Permutation) IDENTITY;
   }
 
-  public static <E> Permutation<E> permutation(Map<E, E> map) {
-    return new MapPermutation<E>(map);
-  }
-
-  public static <E> Permutation<E>
-      restrict(Permutation<E> sigma, Set<E> domain) {
-    if (domain.containsAll(sigma.support())) {
-      return sigma;
-    }
-    Set<E> support = Sets.newHashSet(sigma.support());
-    support.retainAll(domain);
-    return new RestrictedPermutation<E>(sigma, support);
-  }
-
-  public static <E> Permutation<E> transposition(E a, E b) {
-    return new Transposition<E>(a, b);
-  }
-
   public static <A, B> Permutation<B> induced(Permutation<A> sigma,
       Function<A, B> phi) {
     Map<B, B> map = Maps.newHashMap();
-    for (A a : sigma.support()) {
+    for (A a : sigma.domain()) {
       A aImg = sigma.apply(a);
       B b = phi.apply(a);
       B bImg = phi.apply(aImg);
@@ -136,9 +145,12 @@ public final class Permutations {
     return permutation(map);
   }
 
-  public static <E> Permutation<Set<E>> actionOnSetsOfSize(
-      Permutation<E> sigma, int k) {
-    return new SetAction<E>(sigma, k);
+  public static <E> Permutation<E> permutation(Map<E, E> map) {
+    return new MapPermutation<E>(map);
+  }
+
+  public static <E> Permutation<E> transposition(E a, E b) {
+    return new Transposition<E>(a, b);
   }
 
   private Permutations() {

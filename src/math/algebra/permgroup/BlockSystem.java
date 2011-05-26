@@ -23,44 +23,19 @@ import com.google.common.collect.Sets;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import math.structures.FunctionMap;
 import math.structures.Partition;
 import math.structures.permutation.AbstractPermutation;
+import math.structures.permutation.MapPermutation;
 import math.structures.permutation.Permutation;
+import math.structures.permutation.Permutations;
 
 public class BlockSystem<E> extends ForwardingMap<E, Object> implements
     Equivalence<E> {
-  private final class BlockAction extends AbstractPermutation<Object> {
-    private final Permutation<E> sigma;
-
-    BlockAction(Permutation<E> sigma) {
-      this.sigma = sigma;
-    }
-
-    @Override public Object preimage(Object b) {
-      return image(sigma.inverse(), b);
-    }
-
-    @Override public Object apply(Object b) {
-      return image(sigma, b);
-    }
-
-    @Override protected Set<Object> createSupport() {
-      Set<Object> support = Sets.newLinkedHashSet();
-      for (E e : sigma.support()) {
-        support.add(partition.get(e));
-      }
-      for (Iterator<Object> iter = support.iterator(); iter.hasNext();) {
-        Object b = iter.next();
-        if (Objects.equal(b, apply(b)))
-          iter.remove();
-      }
-      return support;
-    }
-  }
 
   private final ImmutableMap<E, Object> partition;
   private transient SetMultimap<Object, E> blocks;
@@ -240,12 +215,16 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
   }
 
   public PermGroup<Object> blockAction(PermGroup<E> g) {
-    return Groups.generateGroup(Collections2.transform(g.generators(),
-        new Function<Permutation<E>, Permutation<Object>>() {
-          @Override public Permutation<Object> apply(Permutation<E> sigma) {
-            return new BlockAction(sigma);
-          }
-        }));
+    List<Permutation<Object>> generators =
+        Lists.newArrayListWithCapacity(g.generators().size());
+    for (Permutation<E> sigma : g.generators()) {
+      Map<Object, Object> map = Maps.newHashMapWithExpectedSize(nBlocks());
+      for (Object block : blocks().keySet()) {
+        map.put(block, image(sigma, block));
+      }
+      generators.add(Permutations.permutation(map));
+    }
+    return Groups.generateGroup(generators);
   }
 
   @Override public boolean equivalent(E a, E b) {

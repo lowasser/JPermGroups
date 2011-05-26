@@ -7,6 +7,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -156,6 +157,9 @@ public class BoundedDegree {
       final SetMultimap<Set<V>, V> children =
           ImmutableSetMultimap.copyOf(Multimaps.invertFrom(
               Multimaps.forMap(parent), HashMultimap.<Set<V>, V> create()));
+
+      Set<Set<V>> parents = children.keySet();
+
       List<Permutation<V>> generators = Lists.newArrayList();
       int max = 1;
       for (Collection<V> siblingsC : children.asMap().values()) {
@@ -167,7 +171,7 @@ public class BoundedDegree {
       System.err.println("Symmetric: " + generators);
 
       System.err.println(children);
-      
+
       Function<Set<V>, Color> aColor = new Function<Set<V>, Color>() {
         @Override public Color apply(Set<V> a) {
           boolean isEdge = a.size() == 2;
@@ -181,9 +185,29 @@ public class BoundedDegree {
         }
       };
 
+      Collection<Permutation<Set<V>>> aGenerators =
+          Lists.newArrayListWithCapacity(autR.generators().size());
+
+      for (final Permutation<V> sigma : autR.generators()) {
+        Map<Set<V>, Set<V>> map = Maps.newHashMap();
+        boolean good = true;
+        for (Set<V> set : parents) {
+          Set<V> img = image(sigma, set);
+          if (parents.contains(img)) {
+            map.put(set, img);
+          } else {
+            good = false;
+            break;
+          }
+        }
+        if (good) {
+          aGenerators.add(Permutations.permutation(map));
+        }
+      }
+
       PermGroup<Set<V>> preservingGroup =
           ColorPreserving.colorPreserving(
-              Groups.actionOnSetsOfSizeAtMost(autR, max), children.keySet(),
+              Groups.generateGroup(aGenerators), parents,
               Colorings.coloring(aColor));
       System.err.println("Preserving: " + preservingGroup);
       for (Permutation<Set<V>> sigma : preservingGroup.generators()) {
@@ -223,6 +247,14 @@ public class BoundedDegree {
     ImmutableBiMap.Builder<T, Object> builder = ImmutableBiMap.builder();
     for (T t : set) {
       builder.put(t, new Object());
+    }
+    return builder.build();
+  }
+
+  private static <E> Set<E> image(Permutation<E> sigma, Set<? extends E> set) {
+    ImmutableSet.Builder<E> builder = ImmutableSet.builder();
+    for (E e : set) {
+      builder.add(sigma.apply(e));
     }
     return builder.build();
   }

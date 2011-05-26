@@ -6,7 +6,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,11 +55,31 @@ final class Transposition<E> extends AbstractPermutation<E> {
     return s.isEmpty() || (s.contains(a) && s.contains(b));
   }
 
-  @Override protected Set<E> createSupport() {
+  @Override protected Set<E> createDomain() {
     return ImmutableSet.of(a, b);
   }
 
-  @Override Map<E, E> createAsMap() {
+  @Override protected Map<E, E> createAsMap() {
     return ImmutableBiMap.of(a, b, b, a);
+  }
+
+  @Override public Permutation<E> compose(List<Permutation<E>> taus) {
+    Map<E, E> map = Maps.newHashMap(Permutations.compose(taus).asMap());
+    E aImage = map.get(b);
+    if (aImage == null) {
+      aImage = b;
+    }
+    E bImage = map.get(a);
+    if (bImage == null) {
+      bImage = a;
+    }
+    map.put(a, aImage);
+    map.put(b, bImage);
+    return Permutations.permutation(map);
+  }
+
+  @Override protected Permutation<E> inverseCompose(List<Permutation<E>> taus) {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

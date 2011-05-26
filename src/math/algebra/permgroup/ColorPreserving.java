@@ -3,6 +3,7 @@ package math.algebra.permgroup;
 import com.google.common.base.Equivalence;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 
 import java.util.Collection;
@@ -39,6 +40,9 @@ public final class ColorPreserving {
     }
 
     Collection<Set<E>> orbits = Orbits.orbits(g, bSet);
+    System.err.println("Group: " + g);
+    System.err.println(g.getClass());
+    System.err.println("Group: " + Iterators.toString(g.iterator()));
     if (orbits.size() > 1) {
       LCoset<E> answer = sigmaG;
       for (Set<E> orbit : orbits) {

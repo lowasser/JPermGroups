@@ -4,14 +4,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Objects;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
 final class InversePermutation<E> extends AbstractPermutation<E> {
-  private final Permutation<E> forward;
+  private final AbstractPermutation<E> forward;
 
-  InversePermutation(Permutation<E> forward) {
+  InversePermutation(AbstractPermutation<E> forward) {
     this.forward = checkNotNull(forward);
   }
 
@@ -48,8 +49,8 @@ final class InversePermutation<E> extends AbstractPermutation<E> {
     return forward.stabilizes(s);
   }
 
-  @Override protected Set<E> createSupport() {
-    return forward.support();
+  @Override protected Set<E> createDomain() {
+    return forward.domain();
   }
 
   @Override public boolean isIdentity() {
@@ -58,5 +59,13 @@ final class InversePermutation<E> extends AbstractPermutation<E> {
 
   @Override protected int computeOrder() {
     return forward.order();
+  }
+
+  @Override public Permutation<E> compose(List<Permutation<E>> taus) {
+    return forward.inverseCompose(taus);
+  }
+
+  @Override protected Permutation<E> inverseCompose(List<Permutation<E>> taus) {
+    return forward.compose(taus);
   }
 }

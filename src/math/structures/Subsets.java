@@ -87,8 +87,6 @@ public class Subsets<E> extends AbstractSet<Set<E>> {
     }
 
     @Override protected Set<E> computeNext() {
-      System.err.println(kk);
-      System.err.println(Arrays.toString(indices));
       if (kk < 0) {
         kk = 0;
         indices[0] = domain.size();

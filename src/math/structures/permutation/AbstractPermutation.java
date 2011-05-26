@@ -1,10 +1,12 @@
 package math.structures.permutation;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,7 +15,7 @@ import javax.annotation.Nullable;
 import math.structures.FunctionMap;
 
 public abstract class AbstractPermutation<E> implements Permutation<E> {
-  private transient Set<E> support = null;
+  private transient Set<E> domain = null;
   transient Permutation<E> inverse = null;
   private transient Integer hashCode = null;
   transient Parity parity = null;
@@ -25,8 +27,8 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
     } else if (obj instanceof Permutation) {
       @SuppressWarnings("unchecked")
       Permutation<E> sigma = (Permutation) obj;
-      Set<E> support = support();
-      boolean good = Objects.equal(support, sigma.support());
+      Set<E> support = domain();
+      boolean good = Objects.equal(support, sigma.domain());
       for (Iterator<E> iter = support.iterator(); good && iter.hasNext();) {
         E e = iter.next();
         good &= Objects.equal(apply(e), sigma.apply(e));
@@ -39,7 +41,7 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
   @Override public int hashCode() {
     if (hashCode == null) {
       int h = 0;
-      for (E e : support()) {
+      for (E e : domain()) {
         h += Maps.immutableEntry(e, apply(e)).hashCode();
       }
       return hashCode = h;
@@ -68,8 +70,8 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
     return true;
   }
 
-  @Override public Set<E> support() {
-    return (support == null) ? support = createSupport() : support;
+  @Override public Set<E> domain() {
+    return (domain == null) ? domain = createDomain() : domain;
   }
 
   @Override public String toString() {
@@ -78,7 +80,7 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
 
   protected Parity computeParity() {
     Parity p = Parity.EVEN;
-    Set<E> todo = Sets.newLinkedHashSet(support());
+    Set<E> todo = Sets.newLinkedHashSet(domain());
     while (!todo.isEmpty()) {
       Iterator<E> iter = todo.iterator();
       E start = iter.next();
@@ -99,10 +101,10 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
     return new InversePermutation<E>(this);
   }
 
-  protected abstract Set<E> createSupport();
+  protected abstract Set<E> createDomain();
 
   @Override public boolean isIdentity() {
-    return support().isEmpty();
+    return domain().isEmpty();
   }
 
   private transient Map<E, E> asMap;
@@ -111,8 +113,8 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
     return (asMap == null) ? asMap = createAsMap() : asMap;
   }
 
-  Map<E, E> createAsMap() {
-    return new FunctionMap<E, E>(support(), this);
+  protected Map<E, E> createAsMap() {
+    return new FunctionMap<E, E>(domain(), this);
   }
 
   @Override public int order() {
@@ -123,7 +125,7 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
 
   protected int computeOrder() {
     int order = 1;
-    Set<E> todo = Sets.newLinkedHashSet(support());
+    Set<E> todo = Sets.newLinkedHashSet(domain());
     while (!todo.isEmpty()) {
       int k = 0;
       for (E e = todo.iterator().next(); todo.remove(e); e = apply(e)) {
@@ -153,5 +155,11 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
       b = tmp;
     }
     return a;
+  }
+
+  protected abstract Permutation<E> inverseCompose(List<Permutation<E>> taus);
+
+  @Override public Permutation<E> compose(Permutation<E> tau) {
+    return compose(ImmutableList.of(tau));
   }
 }

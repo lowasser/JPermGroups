@@ -34,8 +34,12 @@ final class SymmetricGroup<E> extends AbstractPermGroup<E> {
       ImmutableList<E> domainList = domain.asList();
       Permutation<E> sigma =
           Permutations.transposition(domainList.get(0), domainList.get(1));
-      Permutation<E> tau = Permutations.cycle(domainList);
-      return generators = ImmutableList.of(sigma, tau);
+      if (domain.size() > 2) {
+        Permutation<E> tau = Permutations.cycle(domainList);
+        return generators = ImmutableList.of(sigma, tau);
+      } else {
+        return generators = ImmutableList.of(sigma);
+      }
     }
     return generators;
   }
@@ -65,7 +69,7 @@ final class SymmetricGroup<E> extends AbstractPermGroup<E> {
   @Override public boolean contains(@Nullable Object o) {
     if (o instanceof Permutation) {
       Permutation<?> sigma = (Permutation<?>) o;
-      return domain.containsAll(sigma.support());
+      return domain.containsAll(sigma.domain());
     }
     return false;
   }

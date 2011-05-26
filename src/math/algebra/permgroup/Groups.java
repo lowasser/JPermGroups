@@ -43,11 +43,6 @@ public final class Groups {
         }
       };
 
-  public static <E> PermGroup<Set<E>> actionOnSetsOfSizeAtMost(PermGroup<E> g,
-      int k) {
-    return new GroupAction<E>(g, k);
-  }
-
   public static <E> PermGroup<E> alternating(Set<E> domain) {
     if (domain.size() <= 2)
       return trivial();
@@ -61,18 +56,6 @@ public final class Groups {
 
   public static <E> PermGroup<E> generateGroup(Permutation<E>... generators) {
     return generateGroup(Arrays.asList(generators));
-  }
-
-  public static <E> PermGroup<E> restrict(PermGroup<E> group, Set<E> b) {
-    for (Permutation<E> g : group.generators()) {
-      assert g.stabilizes(b);
-    }
-    List<Permutation<E>> generators =
-        Lists.newArrayListWithCapacity(group.generators().size());
-    for (Permutation<E> g : group.generators()) {
-      generators.add(Permutations.restrict(g, b));
-    }
-    return generateGroup(generators);
   }
 
   public static <E> PermGroup<E> symmetric(Set<E> domain) {
