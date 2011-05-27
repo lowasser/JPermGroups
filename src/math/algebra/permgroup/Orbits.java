@@ -69,6 +69,11 @@ public class Orbits {
     return Collections.unmodifiableCollection(orbits);
   }
 
+  public static <E> Collection<Set<Set<E>>> actionOrbits(PermGroup<E> group,
+      Set<Set<E>> domain) {
+    return actionOrbits(group.generators(), domain);
+  }
+
   public static <E> Collection<Set<Set<E>>> actionOrbits(
       Collection<Permutation<E>> generators, Set<Set<E>> domain) {
     Set<Set<E>> todo = Sets.newLinkedHashSet(domain);
@@ -78,6 +83,7 @@ public class Orbits {
       orbit.add(todo.iterator().next());
       Set<Set<E>> theOrbit = orbit.build();
       orbits.add(theOrbit);
+      assert todo.containsAll(theOrbit);
       todo.removeAll(theOrbit);
     }
     return Collections.unmodifiableCollection(orbits);

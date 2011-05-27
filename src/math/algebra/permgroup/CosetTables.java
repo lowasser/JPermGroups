@@ -39,6 +39,12 @@ final class CosetTables<E> {
   }
 
   public static <E> CosetTables<E> subgroupTables(CosetTables<E> currentTables,
+      PermGroup<E> group,
+      Collection<? extends Predicate<? super Permutation<E>>> filters) {
+    return subgroupTables(currentTables, group.generators(), filters);
+  }
+
+  public static <E> CosetTables<E> subgroupTables(CosetTables<E> currentTables,
       Iterable<? extends Permutation<E>> generators,
       Collection<? extends Predicate<? super Permutation<E>>> filters) {
     CosetTables<E> tables = new CosetTables<E>();
@@ -50,6 +56,11 @@ final class CosetTables<E> {
       tables.addGenerator(g, false);
     }
     return immutable(tables);
+  }
+
+  public static <E> CosetTables<E> subgroupTables(PermGroup<E> group,
+      Collection<? extends Predicate<? super Permutation<E>>> filters) {
+    return subgroupTables(group.generators(), filters);
   }
 
   public static <E> CosetTables<E> subgroupTables(

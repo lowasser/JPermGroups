@@ -3,6 +3,7 @@ package math.algebra.permgroup;
 import com.google.common.base.Equivalence;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import static com.google.common.base.Preconditions.*;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -41,7 +42,7 @@ public final class ColorPreserving {
     }
     Permutation<E> sigma = sigmaG.getRepresentative();
     PermGroup<E> g = sigmaG.getGroup();
-    assert g.stabilizes(bSet);
+    checkArgument(g.stabilizes(bSet));
     if (bSet.size() == 1) {
       Set<E> b = bSet.iterator().next();
       Set<E> bImage = sigma.apply(b);

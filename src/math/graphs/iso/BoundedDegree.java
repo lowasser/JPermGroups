@@ -187,7 +187,7 @@ public class BoundedDegree {
       PermGroup<V> preservingGroup =
           ColorPreserving.colorPreservingAction(autR, parents,
               Colorings.coloring(aColor));
-      System.err.println("Preserving: " + preservingGroup);
+      System.err.println("Preserving: " + preservingGroup + " <= " + autR);
       for (Permutation<V> sigma : preservingGroup.generators()) {
         Map<V, V> added = Maps.newHashMap();
         for (Map.Entry<Set<V>, Collection<V>> entry : children.asMap()

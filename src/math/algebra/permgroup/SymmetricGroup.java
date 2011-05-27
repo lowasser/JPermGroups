@@ -76,7 +76,7 @@ final class SymmetricGroup<E> extends AbstractPermGroup<E> {
 
   private Permutation<E> unrank(BigInteger d) {
     List<E> output = Lists.newArrayList(domain.asList());
-    for (int n = output.size(); d.signum() > 0; n--) {
+    for (int n = output.size(); n > 0; n--) {
       BigInteger[] quotRem = d.divideAndRemainder(BigInteger.valueOf(n));
       Collections.swap(output, n - 1, quotRem[1].intValue());
       d = quotRem[0];
