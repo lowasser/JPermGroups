@@ -184,33 +184,11 @@ public class BoundedDegree {
           return new Color(children.get(a).size(), isEdge);
         }
       };
-
-      Collection<Permutation<Set<V>>> aGenerators =
-          Lists.newArrayListWithCapacity(autR.generators().size());
-
-      for (final Permutation<V> sigma : autR.generators()) {
-        Map<Set<V>, Set<V>> map = Maps.newHashMap();
-        boolean good = true;
-        for (Set<V> set : parents) {
-          Set<V> img = image(sigma, set);
-          if (parents.contains(img)) {
-            map.put(set, img);
-          } else {
-            good = false;
-            break;
-          }
-        }
-        if (good) {
-          aGenerators.add(Permutations.permutation(map));
-        }
-      }
-
-      PermGroup<Set<V>> preservingGroup =
-          ColorPreserving.colorPreserving(
-              Groups.generateGroup(aGenerators), parents,
+      PermGroup<V> preservingGroup =
+          ColorPreserving.colorPreservingAction(autR, parents,
               Colorings.coloring(aColor));
       System.err.println("Preserving: " + preservingGroup);
-      for (Permutation<Set<V>> sigma : preservingGroup.generators()) {
+      for (Permutation<V> sigma : preservingGroup.generators()) {
         Map<V, V> added = Maps.newHashMap();
         for (Map.Entry<Set<V>, Collection<V>> entry : children.asMap()
           .entrySet()) {
@@ -247,14 +225,6 @@ public class BoundedDegree {
     ImmutableBiMap.Builder<T, Object> builder = ImmutableBiMap.builder();
     for (T t : set) {
       builder.put(t, new Object());
-    }
-    return builder.build();
-  }
-
-  private static <E> Set<E> image(Permutation<E> sigma, Set<? extends E> set) {
-    ImmutableSet.Builder<E> builder = ImmutableSet.builder();
-    for (E e : set) {
-      builder.add(sigma.apply(e));
     }
     return builder.build();
   }

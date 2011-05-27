@@ -3,6 +3,7 @@ package math.algebra.permgroup;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 
+import java.util.Collection;
 import java.util.Set;
 
 import math.structures.permutation.Permutation;
@@ -18,6 +19,20 @@ final class StabilizesPredicate<E> implements Predicate<Permutation<E>> {
 
   public static <E> StabilizesPredicate<E> on(Set<E> elements) {
     return new StabilizesPredicate<E>(ImmutableSet.copyOf(elements));
+  }
+
+  public static <E> Predicate<Permutation<E>> actionOn(
+      final Collection<Set<E>> collection) {
+    return new Predicate<Permutation<E>>() {
+      @Override public boolean apply(Permutation<E> sigma) {
+        for (Set<E> set : collection) {
+          if (!collection.contains(sigma.apply(set))) {
+            return false;
+          }
+        }
+        return true;
+      }
+    };
   }
 
   private final ImmutableSet<E> set;

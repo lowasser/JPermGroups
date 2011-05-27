@@ -1,7 +1,9 @@
 package math.structures.permutation;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -161,5 +163,9 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
 
   @Override public Permutation<E> compose(Permutation<E> tau) {
     return compose(ImmutableList.of(tau));
+  }
+
+  @Override public Set<E> apply(Set<E> set) {
+    return ImmutableSet.copyOf(Collections2.transform(set, this));
   }
 }

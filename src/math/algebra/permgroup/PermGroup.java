@@ -35,4 +35,6 @@ public interface PermGroup<E> extends Set<Permutation<E>> {
 
   public abstract boolean stabilizes(Set<E> set);
 
+  public abstract boolean stabilizes(Collection<Set<E>> collection);
+
 }

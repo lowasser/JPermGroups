@@ -84,6 +84,17 @@ public abstract class AbstractPermGroup<E> extends AbstractSet<Permutation<E>>
     return new SubgroupView<E>(reps, subgroup, this);
   }
 
+  @Override public boolean stabilizes(Collection<Set<E>> collection) {
+    for(Set<E> set:collection) {
+      for(Permutation<E> sigma:generators()) {
+        if(!collection.contains(sigma.apply(set))) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   /* (non-Javadoc)
    * @see math.algebra.permgroup.PermutationGroup#subgroup(com.google.common.base.Predicate)
    */

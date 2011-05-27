@@ -1,24 +1,18 @@
 package math.algebra.permgroup;
 
-import static math.structures.permutation.Permutations.cycle;
 import static math.structures.permutation.Permutations.identity;
-import static math.structures.permutation.Permutations.transposition;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import math.structures.permutation.Permutation;
 import math.structures.permutation.Permutation.Parity;
-import math.structures.permutation.Permutations;
 
 public final class Groups {
   private static final PermGroup<Object> TRIVIAL_GROUP =
@@ -66,16 +60,6 @@ public final class Groups {
 
   @SuppressWarnings("unchecked") public static <E> PermGroup<E> trivial() {
     return (PermGroup<E>) TRIVIAL_GROUP;
-  }
-
-  private static <E> PermGroup<E> symmetric(ImmutableSet<E> domain) {
-    if (domain.size() <= 1) {
-      return trivial();
-    }
-    ImmutableList<E> domainList = domain.asList();
-    Permutation<E> sigma = transposition(domainList.get(0), domainList.get(1));
-    Permutation<E> tau = cycle(domainList);
-    return generateGroup(ImmutableList.of(sigma, tau));
   }
 
   private Groups() {

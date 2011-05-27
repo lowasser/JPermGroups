@@ -64,6 +64,9 @@ final class Transposition<E> extends AbstractPermutation<E> {
   }
 
   @Override public Permutation<E> compose(List<Permutation<E>> taus) {
+    if (taus.isEmpty()) {
+      return this;
+    }
     Map<E, E> map = Maps.newHashMap(Permutations.compose(taus).asMap());
     E aImage = map.get(b);
     if (aImage == null) {

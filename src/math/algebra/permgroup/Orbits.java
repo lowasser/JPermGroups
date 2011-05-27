@@ -11,6 +11,28 @@ import java.util.Set;
 import math.structures.permutation.Permutation;
 
 public class Orbits {
+
+  private static class OrbitBuilderAction<E> {
+    private final Set<Set<E>> orbit;
+    private final Collection<Permutation<E>> generators;
+
+    OrbitBuilderAction(Collection<Permutation<E>> generators) {
+      this.generators = generators;
+      this.orbit = Sets.newHashSet();
+    }
+
+    public void add(Set<E> set) {
+      if (orbit.add(set)) {
+        for (Permutation<E> sigma : generators) {
+          add(sigma.apply(set));
+        }
+      }
+    }
+
+    public Set<Set<E>> build() {
+      return Collections.unmodifiableSet(orbit);
+    }
+  }
   private static class OrbitBuilder<E> {
     private final Set<E> orbit;
     private final Collection<Permutation<E>> generators;
@@ -41,6 +63,20 @@ public class Orbits {
       OrbitBuilder<E> orbit = new OrbitBuilder<E>(generators);
       orbit.add(todo.iterator().next());
       Set<E> theOrbit = orbit.build();
+      orbits.add(theOrbit);
+      todo.removeAll(theOrbit);
+    }
+    return Collections.unmodifiableCollection(orbits);
+  }
+
+  public static <E> Collection<Set<Set<E>>> actionOrbits(
+      Collection<Permutation<E>> generators, Set<Set<E>> domain) {
+    Set<Set<E>> todo = Sets.newLinkedHashSet(domain);
+    List<Set<Set<E>>> orbits = Lists.newArrayList();
+    while (!todo.isEmpty()) {
+      OrbitBuilderAction<E> orbit = new OrbitBuilderAction<E>(generators);
+      orbit.add(todo.iterator().next());
+      Set<Set<E>> theOrbit = orbit.build();
       orbits.add(theOrbit);
       todo.removeAll(theOrbit);
     }

@@ -5,17 +5,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -98,7 +94,7 @@ public final class Permutations {
       return identity();
     }
     Permutation<E> sigma = sigmas.get(0);
-    if(sigmas.size() == 1)
+    if (sigmas.size() == 1)
       return sigma;
     return sigma.compose(sigmas.subList(1, sigmas.size()));
   }

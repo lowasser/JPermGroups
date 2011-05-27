@@ -1,6 +1,7 @@
 package math.algebra.permgroup;
 
 import com.google.common.base.Equivalence;
+import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
@@ -8,6 +9,7 @@ import com.google.common.collect.Lists;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -25,7 +27,52 @@ public final class ColorPreserving {
         domain, coloring).getGroup();
   }
 
-  private static <E, C> LCoset<E> colorPreserving(@Nullable LCoset<E> sigmaG,
+  public static <E> PermGroup<E> colorPreservingAction(PermGroup<E> g,
+      Set<Set<E>> domain, Equivalence<Set<E>> coloring) {
+    return colorPreservingAction(new LCoset<E>(Permutations.<E> identity(), g),
+        domain, coloring).getGroup();
+  }
+
+  private static <E> LCoset<E>
+      colorPreservingAction(@Nullable LCoset<E> sigmaG, Set<Set<E>> bSet,
+          Equivalence<Set<E>> coloring) {
+    if (sigmaG == null) {
+      return null;
+    }
+    Permutation<E> sigma = sigmaG.getRepresentative();
+    PermGroup<E> g = sigmaG.getGroup();
+    assert g.stabilizes(bSet);
+    if (bSet.size() == 1) {
+      Set<E> b = bSet.iterator().next();
+      Set<E> bImage = sigma.apply(b);
+      return coloring.equivalent(b, bImage) ? sigmaG : null;
+    }
+    Collection<Set<Set<E>>> orbits = Orbits.actionOrbits(g, bSet);
+    if (orbits.size() > 1) {
+      LCoset<E> answer = sigmaG;
+      for (Set<Set<E>> orbit : orbits) {
+        answer = colorPreservingAction(answer, orbit, coloring);
+        if (answer == null) {
+          break;
+        }
+      }
+      return answer;
+    }
+
+    BlockSystem<Set<E>> system = BlockSystem.minimalBlockSystemAction(g, bSet);
+    List<Predicate<Permutation<E>>> filters = Lists.newArrayList();
+    for (Collection<Set<E>> collection : system.blocks().asMap().values()) {
+      filters.add(StabilizesPredicate.actionOn(collection));
+    }
+    PermSubgroup<E> stabilizingSubgroup = g.subgroup(filters);
+    Collection<LCoset<E>> colorPreservers = Lists.newArrayList();
+    for (LCoset<E> coset : stabilizingSubgroup.asCosets()) {
+      colorPreservers.add(colorPreservingAction(coset, bSet, coloring));
+    }
+    return glue(colorPreservers);
+  }
+
+  private static <E> LCoset<E> colorPreserving(@Nullable LCoset<E> sigmaG,
       Set<E> bSet, Equivalence<E> coloring) {
     if (sigmaG == null) {
       return null;

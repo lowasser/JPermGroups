@@ -99,6 +99,9 @@ public class MapPermutation<E> extends AbstractPermutation<E> {
   }
 
   @Override public Permutation<E> compose(List<Permutation<E>> taus) {
+    if (taus.isEmpty()) {
+      return this;
+    }
     Map<E, E> tau = Maps.newHashMap(asMap());
     for (Permutation<E> sigma : taus) {
       if (!tau.isEmpty()) {
@@ -123,7 +126,29 @@ public class MapPermutation<E> extends AbstractPermutation<E> {
   }
 
   @Override protected Permutation<E> inverseCompose(List<Permutation<E>> taus) {
-    // TODO Auto-generated method stub
-    return null;
+    if (taus.isEmpty()) {
+      return this;
+    }
+    Map<E, E> tau = Maps.newHashMap(map.inverse());
+    for (Permutation<E> sigma : taus) {
+      if (!tau.isEmpty()) {
+        List<Entry<E, E>> entryList = Lists.newArrayList();
+        for (Entry<E, E> entry : sigma.asMap().entrySet()) {
+          E e = entry.getKey();
+          E sigmaE = entry.getValue();
+          E sigmaTauE = tau.remove(sigmaE);
+          if (!Objects.equal(sigmaTauE, e)) {
+            entryList.add(Maps.immutableEntry(e, (sigmaTauE == null) ? sigmaE
+                : sigmaTauE));
+          }
+        }
+        for (Entry<E, E> entry : entryList) {
+          tau.put(entry.getKey(), entry.getValue());
+        }
+      } else {
+        tau.putAll(sigma.asMap());
+      }
+    }
+    return new MapPermutation<E>(tau);
   }
 }

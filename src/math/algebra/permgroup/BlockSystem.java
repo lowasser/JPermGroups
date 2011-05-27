@@ -4,11 +4,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Equivalence;
-import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableBiMap;
@@ -29,8 +27,6 @@ import java.util.Set;
 
 import math.structures.FunctionMap;
 import math.structures.Partition;
-import math.structures.permutation.AbstractPermutation;
-import math.structures.permutation.MapPermutation;
 import math.structures.permutation.Permutation;
 import math.structures.permutation.Permutations;
 
@@ -64,6 +60,19 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
       BlockSystem<E> tmp = refine(g.generators(), current, a, b);
       if (!tmp.isTrivial())
         current = tmp;
+    }
+    return current;
+  }
+
+  public static <E> BlockSystem<Set<E>> minimalBlockSystemAction(
+      PermGroup<E> g, Set<Set<E>> domain) {
+    BlockSystem<Set<E>> current = new BlockSystem<Set<E>>(domain);
+    Set<E> a = domain.iterator().next();
+    for (Set<E> b : domain) {
+      BlockSystem<Set<E>> tmp = refine(g.generators(), current, a, b);
+      if (!tmp.isTrivial()) {
+        current = tmp;
+      }
     }
     return current;
   }
@@ -130,6 +139,28 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
     return partition.get(eImage);
   }
 
+  private static <E> BlockSystem<Set<E>> refine(
+      Collection<Permutation<E>> generators, BlockSystem<Set<E>> system,
+      Set<E> a, Set<E> b) {
+    if (system.equivalent(a, b) || system.nBlocks() <= 2) {
+      return system;
+    }
+    Map<Object, Partition> fresh =
+        Maps.newHashMapWithExpectedSize(system.nBlocks >= 0 ? system.nBlocks
+            : 16);
+    ImmutableMap.Builder<Set<E>, Partition> builder = ImmutableMap.builder();
+    for (Entry<Set<E>, Object> entry : system.entrySet()) {
+      Object part = entry.getValue();
+      Partition p = fresh.get(part);
+      if (p == null)
+        fresh.put(part, p = new Partition());
+      builder.put(entry.getKey(), p);
+    }
+    ImmutableMap<Set<E>, Partition> partition = builder.build();
+    int nBlocks = refiner(generators, partition, a, b, fresh.size() - 1);
+    return new BlockSystem<Set<E>>(partition, nBlocks);
+  }
+
   private static <E> BlockSystem<E> refine(
       Collection<Permutation<E>> generators, BlockSystem<E> system, E a, E b) {
     if (system.equivalent(a, b) || system.nBlocks() <= 2) {
@@ -149,6 +180,22 @@ public class BlockSystem<E> extends ForwardingMap<E, Object> implements
     ImmutableMap<E, Partition> partition = builder.build();
     int nBlocks = refiner(generators, partition, a, b, fresh.size() - 1);
     return new BlockSystem<E>(partition, nBlocks);
+  }
+
+  private static <E> int refiner(Collection<Permutation<E>> generators,
+      Map<Set<E>, Partition> partition, Set<E> x, Set<E> y, int nBlocks) {
+    if (!partition.get(x).combine(partition.get(y))) {
+      return nBlocks;
+    }
+    nBlocks--;
+    for (Iterator<Permutation<E>> iterator = generators.iterator(); nBlocks > 1
+        && iterator.hasNext();) {
+      Permutation<E> sigma = iterator.next();
+      Set<E> xImg = sigma.apply(x);
+      Set<E> yImg = sigma.apply(y);
+      nBlocks = refiner(generators, partition, xImg, yImg, nBlocks);
+    }
+    return nBlocks;
   }
 
   private static <E> int refiner(Collection<Permutation<E>> generators,

@@ -41,5 +41,9 @@ abstract class ForwardingPermGroup<E> extends
     return delegate().subgroup(filter);
   }
 
+  @Override public boolean stabilizes(Collection<Set<E>> collection) {
+    return delegate().stabilizes(collection);
+  }
+
   @Override protected abstract PermGroup<E> delegate();
 }

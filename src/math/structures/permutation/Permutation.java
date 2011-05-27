@@ -30,6 +30,8 @@ public interface Permutation<E> extends Function<E, E> {
     public abstract Parity inverse();
   }
 
+  public Set<E> apply(Set<E> set);
+  
   public Permutation<E> inverse();
 
   public Parity parity();
