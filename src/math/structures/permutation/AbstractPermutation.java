@@ -17,11 +17,49 @@ import javax.annotation.Nullable;
 import math.structures.FunctionMap;
 
 public abstract class AbstractPermutation<E> implements Permutation<E> {
+  static int gcd(int a, int b) {
+    a = Math.abs(a);
+    b = Math.abs(b);
+    if (a < b) {
+      int tmp = a;
+      a = b;
+      b = tmp;
+    }
+    while (b > 0) {
+      int tmp = a % b;
+      a = b;
+      b = tmp;
+    }
+    return a;
+  }
+
+  static int lcm(int a, int b) {
+    b /= gcd(a, b);
+    return a * b;
+  }
+
   private transient Set<E> domain = null;
   transient Permutation<E> inverse = null;
   private transient Integer hashCode = null;
   transient Parity parity = null;
   private transient int order = -1;
+  private transient Map<E, E> asMap;
+
+  @Override public Set<E> apply(Set<E> set) {
+    return ImmutableSet.copyOf(Collections2.transform(set, this));
+  }
+
+  @Override public Map<E, E> asMap() {
+    return (asMap == null) ? asMap = createAsMap() : asMap;
+  }
+
+  @Override public Permutation<E> compose(Permutation<E> tau) {
+    return compose(ImmutableList.of(tau));
+  }
+
+  @Override public Set<E> domain() {
+    return (domain == null) ? domain = createDomain() : domain;
+  }
 
   @Override public boolean equals(@Nullable Object obj) {
     if (obj == this) {
@@ -55,6 +93,17 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
     return (inverse == null) ? inverse = createInverse() : inverse;
   }
 
+  @Override public boolean isIdentity() {
+    return domain().isEmpty();
+  }
+
+  @Override public int order() {
+    if (order >= 0) {
+      return order;
+    }
+    return order = computeOrder();
+  }
+
   @Override public Parity parity() {
     return (parity == null) ? parity = computeParity() : parity;
   }
@@ -72,12 +121,21 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
     return true;
   }
 
-  @Override public Set<E> domain() {
-    return (domain == null) ? domain = createDomain() : domain;
-  }
-
   @Override public String toString() {
     return createAsMap().toString();
+  }
+
+  protected int computeOrder() {
+    int order = 1;
+    Set<E> todo = Sets.newLinkedHashSet(domain());
+    while (!todo.isEmpty()) {
+      int k = 0;
+      for (E e = todo.iterator().next(); todo.remove(e); e = apply(e)) {
+        k++;
+      }
+      order = lcm(order, k);
+    }
+    return order;
   }
 
   protected Parity computeParity() {
@@ -99,73 +157,15 @@ public abstract class AbstractPermutation<E> implements Permutation<E> {
     return p;
   }
 
-  protected Permutation<E> createInverse() {
-    return new InversePermutation<E>(this);
-  }
-
-  protected abstract Set<E> createDomain();
-
-  @Override public boolean isIdentity() {
-    return domain().isEmpty();
-  }
-
-  private transient Map<E, E> asMap;
-
-  @Override public Map<E, E> asMap() {
-    return (asMap == null) ? asMap = createAsMap() : asMap;
-  }
-
   protected Map<E, E> createAsMap() {
     return new FunctionMap<E, E>(domain(), this);
   }
 
-  @Override public int order() {
-    if (order >= 0)
-      return order;
-    return order = computeOrder();
-  }
+  protected abstract Set<E> createDomain();
 
-  protected int computeOrder() {
-    int order = 1;
-    Set<E> todo = Sets.newLinkedHashSet(domain());
-    while (!todo.isEmpty()) {
-      int k = 0;
-      for (E e = todo.iterator().next(); todo.remove(e); e = apply(e)) {
-        k++;
-      }
-      order = lcm(order, k);
-    }
-    return order;
-  }
-
-  static int lcm(int a, int b) {
-    b /= gcd(a, b);
-    return a * b;
-  }
-
-  static int gcd(int a, int b) {
-    a = Math.abs(a);
-    b = Math.abs(b);
-    if (a < b) {
-      int tmp = a;
-      a = b;
-      b = tmp;
-    }
-    while (b > 0) {
-      int tmp = a % b;
-      a = b;
-      b = tmp;
-    }
-    return a;
+  protected Permutation<E> createInverse() {
+    return new InversePermutation<E>(this);
   }
 
   protected abstract Permutation<E> inverseCompose(List<Permutation<E>> taus);
-
-  @Override public Permutation<E> compose(Permutation<E> tau) {
-    return compose(ImmutableList.of(tau));
-  }
-
-  @Override public Set<E> apply(Set<E> set) {
-    return ImmutableSet.copyOf(Collections2.transform(set, this));
-  }
 }

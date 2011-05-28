@@ -9,7 +9,6 @@ import com.google.common.collect.Maps;
 
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -43,6 +42,18 @@ public class PermutationTests extends TestCase {
     }
   }
 
+  public void testEquals() {
+    assertEquals(p3, compose(p2, p1));
+    assertFalse(p3.equals(compose(p1, p2)));
+  }
+
+  public void testInverse() {
+    Permutation<Integer> idP = Permutations.identity();
+    assertEquals(idP, compose(p1, p1.inverse()));
+    assertEquals(idP, compose(p1.inverse(), p1));
+    assertFalse(idP.equals(p1));
+  }
+
   private Permutation<Integer> randomPermutation(int n, Random gen) {
     int[] arr = new int[n];
     for (int i = 0; i < n; i++) {
@@ -55,20 +66,9 @@ public class PermutationTests extends TestCase {
       arr[j] = tmp;
     }
     Map<Integer, Integer> map = Maps.newHashMapWithExpectedSize(n);
-    for (int i = 0; i < n; i++)
+    for (int i = 0; i < n; i++) {
       map.put(i, arr[i]);
+    }
     return Permutations.permutation(map);
-  }
-
-  public void testEquals() {
-    assertEquals(p3, compose(p2, p1));
-    assertFalse(p3.equals(compose(p1, p2)));
-  }
-
-  public void testInverse() {
-    Permutation<Integer> idP = Permutations.identity();
-    assertEquals(idP, compose(p1, p1.inverse()));
-    assertEquals(idP, compose(p1.inverse(), p1));
-    assertFalse(idP.equals(p1));
   }
 }

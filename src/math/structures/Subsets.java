@@ -14,31 +14,8 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 public class Subsets<E> extends AbstractSet<Set<E>> {
-  private final int k;
-  private final ImmutableMap<E, Integer> domain;
-
-  public static <E> Set<Set<E>> subsetsOfSizeAtMost(Set<E> set, int k) {
-    k = Math.min(k, set.size());
-    checkPositionIndex(k, set.size());
-    ImmutableMap.Builder<E, Integer> builder = ImmutableMap.builder();
-    int i = 0;
-    for (E e : set) {
-      builder.put(e, i++);
-    }
-    return new Subsets<E>(builder.build(), k);
-  }
-
-  private Subsets(ImmutableMap<E, Integer> domain, int k) {
-    this.k = k;
-    this.domain = domain;
-  }
-
   private class Subset extends AbstractSet<E> {
     private int[] indices;
-
-    private ImmutableMap<E, Integer> domain() {
-      return domain;
-    }
 
     private Subset(int[] indices, int k) {
       checkPositionIndex(k, indices.length);
@@ -66,8 +43,9 @@ public class Subsets<E> extends AbstractSet<Set<E>> {
         private int i = 0;
 
         @Override protected E computeNext() {
-          if (i >= indices.length)
+          if (i >= indices.length) {
             return endOfData();
+          }
           return get(indices[i++]);
         }
       };
@@ -76,15 +54,14 @@ public class Subsets<E> extends AbstractSet<Set<E>> {
     @Override public int size() {
       return indices.length;
     }
-  }
 
+    private ImmutableMap<E, Integer> domain() {
+      return domain;
+    }
+  }
   private class SubsetsIterator extends AbstractIterator<Set<E>> {
     private int kk = -1;
     private final int[] indices = new int[k + 1];
-
-    private Set<E> current() {
-      return new Subset(indices, kk);
-    }
 
     @Override protected Set<E> computeNext() {
       if (kk < 0) {
@@ -111,22 +88,49 @@ public class Subsets<E> extends AbstractSet<Set<E>> {
       indices[kk] = domain.size();
       return current();
     }
+
+    private Set<E> current() {
+      return new Subset(indices, kk);
+    }
   }
 
-  private E get(int i) {
-    return domain.entrySet().asList().get(i).getKey();
+  public static <E> Set<Set<E>> subsetsOfSizeAtMost(Set<E> set, int k) {
+    k = Math.min(k, set.size());
+    checkPositionIndex(k, set.size());
+    ImmutableMap.Builder<E, Integer> builder = ImmutableMap.builder();
+    int i = 0;
+    for (E e : set) {
+      builder.put(e, i++);
+    }
+    return new Subsets<E>(builder.build(), k);
   }
 
-  private int getIndex(@Nullable Object o) {
-    Integer i = domain.get(o);
-    return (i == null) ? -1 : i;
+  private final int k;
+
+  private final ImmutableMap<E, Integer> domain;
+
+  private transient int size = -1;
+
+  private Subsets(ImmutableMap<E, Integer> domain, int k) {
+    this.k = k;
+    this.domain = domain;
+  }
+
+  @Override public boolean contains(@Nullable Object o) {
+    if (o instanceof Set) {
+      Set<?> s = (Set<?>) o;
+      return s.size() <= k && domain.keySet().containsAll(s);
+    }
+    return false;
+  }
+
+  @Override public boolean isEmpty() {
+    return false;
   }
 
   @Override public Iterator<Set<E>> iterator() {
     return new SubsetsIterator();
   }
-
-  private transient int size = -1;
 
   @Override public int size() {
     if (size >= 0) {
@@ -143,15 +147,12 @@ public class Subsets<E> extends AbstractSet<Set<E>> {
     return this.size = ans;
   }
 
-  @Override public boolean isEmpty() {
-    return false;
+  private E get(int i) {
+    return domain.entrySet().asList().get(i).getKey();
   }
 
-  @Override public boolean contains(@Nullable Object o) {
-    if (o instanceof Set) {
-      Set<?> s = (Set<?>) o;
-      return s.size() <= k && domain.keySet().containsAll(s);
-    }
-    return false;
+  private int getIndex(@Nullable Object o) {
+    Integer i = domain.get(o);
+    return (i == null) ? -1 : i;
   }
 }

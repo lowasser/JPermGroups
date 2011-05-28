@@ -12,27 +12,6 @@ import math.structures.permutation.Permutation;
 
 public class Orbits {
 
-  private static class OrbitBuilderAction<E> {
-    private final Set<Set<E>> orbit;
-    private final Collection<Permutation<E>> generators;
-
-    OrbitBuilderAction(Collection<Permutation<E>> generators) {
-      this.generators = generators;
-      this.orbit = Sets.newHashSet();
-    }
-
-    public void add(Set<E> set) {
-      if (orbit.add(set)) {
-        for (Permutation<E> sigma : generators) {
-          add(sigma.apply(set));
-        }
-      }
-    }
-
-    public Set<Set<E>> build() {
-      return Collections.unmodifiableSet(orbit);
-    }
-  }
   private static class OrbitBuilder<E> {
     private final Set<E> orbit;
     private final Collection<Permutation<E>> generators;
@@ -54,24 +33,26 @@ public class Orbits {
       return Collections.unmodifiableSet(orbit);
     }
   }
+  private static class OrbitBuilderAction<E> {
+    private final Set<Set<E>> orbit;
+    private final Collection<Permutation<E>> generators;
 
-  public static <E> Collection<Set<E>> orbits(
-      Collection<Permutation<E>> generators, Set<E> domain) {
-    Set<E> todo = Sets.newLinkedHashSet(domain);
-    List<Set<E>> orbits = Lists.newArrayList();
-    while (!todo.isEmpty()) {
-      OrbitBuilder<E> orbit = new OrbitBuilder<E>(generators);
-      orbit.add(todo.iterator().next());
-      Set<E> theOrbit = orbit.build();
-      orbits.add(theOrbit);
-      todo.removeAll(theOrbit);
+    OrbitBuilderAction(Collection<Permutation<E>> generators) {
+      this.generators = generators;
+      this.orbit = Sets.newHashSet();
     }
-    return Collections.unmodifiableCollection(orbits);
-  }
 
-  public static <E> Collection<Set<Set<E>>> actionOrbits(PermGroup<E> group,
-      Set<Set<E>> domain) {
-    return actionOrbits(group.generators(), domain);
+    public void add(Set<E> set) {
+      if (orbit.add(set)) {
+        for (Permutation<E> sigma : generators) {
+          add(sigma.apply(set));
+        }
+      }
+    }
+
+    public Set<Set<E>> build() {
+      return Collections.unmodifiableSet(orbit);
+    }
   }
 
   public static <E> Collection<Set<Set<E>>> actionOrbits(
@@ -84,6 +65,25 @@ public class Orbits {
       Set<Set<E>> theOrbit = orbit.build();
       orbits.add(theOrbit);
       assert todo.containsAll(theOrbit);
+      todo.removeAll(theOrbit);
+    }
+    return Collections.unmodifiableCollection(orbits);
+  }
+
+  public static <E> Collection<Set<Set<E>>> actionOrbits(PermGroup<E> group,
+      Set<Set<E>> domain) {
+    return actionOrbits(group.generators(), domain);
+  }
+
+  public static <E> Collection<Set<E>> orbits(
+      Collection<Permutation<E>> generators, Set<E> domain) {
+    Set<E> todo = Sets.newLinkedHashSet(domain);
+    List<Set<E>> orbits = Lists.newArrayList();
+    while (!todo.isEmpty()) {
+      OrbitBuilder<E> orbit = new OrbitBuilder<E>(generators);
+      orbit.add(todo.iterator().next());
+      Set<E> theOrbit = orbit.build();
+      orbits.add(theOrbit);
       todo.removeAll(theOrbit);
     }
     return Collections.unmodifiableCollection(orbits);

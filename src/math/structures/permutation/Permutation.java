@@ -31,8 +31,24 @@ public interface Permutation<E> extends Function<E, E> {
   }
 
   public Set<E> apply(Set<E> set);
-  
+
+  public Map<E, E> asMap();
+
+  public Permutation<E> compose(List<Permutation<E>> taus);
+
+  public Permutation<E> compose(Permutation<E> tau);
+
+  /**
+   * A {@code Set<E>} which is guaranteed to contain all elements that are moved
+   * by this permutation.
+   */
+  public Set<E> domain();
+
   public Permutation<E> inverse();
+
+  public boolean isIdentity();
+
+  public int order();
 
   public Parity parity();
 
@@ -41,20 +57,4 @@ public interface Permutation<E> extends Function<E, E> {
   public boolean stabilizes(E e);
 
   public boolean stabilizes(Set<E> s);
-
-  /**
-   * A {@code Set<E>} which is guaranteed to contain all elements that are moved
-   * by this permutation.
-   */
-  public Set<E> domain();
-
-  public boolean isIdentity();
-
-  public Map<E, E> asMap();
-
-  public int order();
-
-  public Permutation<E> compose(Permutation<E> tau);
-
-  public Permutation<E> compose(List<Permutation<E>> taus);
 }

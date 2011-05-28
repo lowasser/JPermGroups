@@ -9,18 +9,6 @@ import java.util.Set;
 import math.structures.permutation.Permutation;
 
 final class StabilizesPredicate<E> implements Predicate<Permutation<E>> {
-  public static <E> StabilizesPredicate<E> on(E e) {
-    return new StabilizesPredicate<E>(ImmutableSet.of(e));
-  }
-
-  public static <E> StabilizesPredicate<E> on(E... elements) {
-    return new StabilizesPredicate<E>(ImmutableSet.copyOf(elements));
-  }
-
-  public static <E> StabilizesPredicate<E> on(Set<E> elements) {
-    return new StabilizesPredicate<E>(ImmutableSet.copyOf(elements));
-  }
-
   public static <E> Predicate<Permutation<E>> actionOn(
       final Collection<Set<E>> collection) {
     return new Predicate<Permutation<E>>() {
@@ -33,6 +21,18 @@ final class StabilizesPredicate<E> implements Predicate<Permutation<E>> {
         return true;
       }
     };
+  }
+
+  public static <E> StabilizesPredicate<E> on(E e) {
+    return new StabilizesPredicate<E>(ImmutableSet.of(e));
+  }
+
+  public static <E> StabilizesPredicate<E> on(E... elements) {
+    return new StabilizesPredicate<E>(ImmutableSet.copyOf(elements));
+  }
+
+  public static <E> StabilizesPredicate<E> on(Set<E> elements) {
+    return new StabilizesPredicate<E>(ImmutableSet.copyOf(elements));
   }
 
   private final ImmutableSet<E> set;

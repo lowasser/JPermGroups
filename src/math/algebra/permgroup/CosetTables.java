@@ -38,53 +38,6 @@ final class CosetTables<E> {
     return immutable(tables);
   }
 
-  public static <E> CosetTables<E> subgroupTables(CosetTables<E> currentTables,
-      PermGroup<E> group,
-      Collection<? extends Predicate<? super Permutation<E>>> filters) {
-    return subgroupTables(currentTables, group.generators(), filters);
-  }
-
-  public static <E> CosetTables<E> subgroupTables(CosetTables<E> currentTables,
-      Iterable<? extends Permutation<E>> generators,
-      Collection<? extends Predicate<? super Permutation<E>>> filters) {
-    CosetTables<E> tables = new CosetTables<E>();
-    for (Predicate<? super Permutation<E>> filter : filters)
-      tables.addTable(filter);
-    for (CosetTable<E> table : currentTables.tables)
-      tables.addTable(table.getFilter());
-    for (Permutation<E> g : generators) {
-      tables.addGenerator(g, false);
-    }
-    return immutable(tables);
-  }
-
-  public static <E> CosetTables<E> subgroupTables(PermGroup<E> group,
-      Collection<? extends Predicate<? super Permutation<E>>> filters) {
-    return subgroupTables(group.generators(), filters);
-  }
-
-  public static <E> CosetTables<E> subgroupTables(
-      Iterable<? extends Permutation<E>> generators,
-      Collection<? extends Predicate<? super Permutation<E>>> filters) {
-    CosetTables<E> tables = new CosetTables<E>();
-    for (Predicate<? super Permutation<E>> filter : filters)
-      tables.addTable(filter);
-    for (Permutation<E> g : generators) {
-      tables.addGenerator(g, true);
-    }
-    return immutable(tables);
-  }
-
-  public CosetTables<E> drop(int k) {
-    checkPositionIndex(k, tables.size());
-    return new CosetTables<E>(support, tables.subList(k, tables.size()));
-  }
-
-  public CosetTables<E> take(int k) {
-    checkPositionIndex(k, tables.size());
-    return new CosetTables<E>(support, tables.subList(0, k));
-  }
-
   public static <E> CosetTables<E> immutable(CosetTables<E> cTables) {
     ImmutableList.Builder<CosetTable<E>> builder = ImmutableList.builder();
     for (CosetTable<E> table : cTables.tables) {
@@ -92,6 +45,46 @@ final class CosetTables<E> {
     }
     return new CosetTables<E>(ImmutableSet.copyOf(cTables.support),
         builder.build(), ImmutableList.copyOf(cTables.generators));
+  }
+
+  public static <E> CosetTables<E> subgroupTables(CosetTables<E> currentTables,
+      Iterable<? extends Permutation<E>> generators,
+      Collection<? extends Predicate<? super Permutation<E>>> filters) {
+    CosetTables<E> tables = new CosetTables<E>();
+    for (Predicate<? super Permutation<E>> filter : filters) {
+      tables.addTable(filter);
+    }
+    for (CosetTable<E> table : currentTables.tables) {
+      tables.addTable(table.getFilter());
+    }
+    for (Permutation<E> g : generators) {
+      tables.addGenerator(g, false);
+    }
+    return immutable(tables);
+  }
+
+  public static <E> CosetTables<E> subgroupTables(CosetTables<E> currentTables,
+      PermGroup<E> group,
+      Collection<? extends Predicate<? super Permutation<E>>> filters) {
+    return subgroupTables(currentTables, group.generators(), filters);
+  }
+
+  public static <E> CosetTables<E> subgroupTables(
+      Iterable<? extends Permutation<E>> generators,
+      Collection<? extends Predicate<? super Permutation<E>>> filters) {
+    CosetTables<E> tables = new CosetTables<E>();
+    for (Predicate<? super Permutation<E>> filter : filters) {
+      tables.addTable(filter);
+    }
+    for (Permutation<E> g : generators) {
+      tables.addGenerator(g, true);
+    }
+    return immutable(tables);
+  }
+
+  public static <E> CosetTables<E> subgroupTables(PermGroup<E> group,
+      Collection<? extends Predicate<? super Permutation<E>>> filters) {
+    return subgroupTables(group.generators(), filters);
   }
 
   private final Set<E> support;
@@ -119,18 +112,12 @@ final class CosetTables<E> {
       };
 
   private transient Collection<Permutation<E>> generated;
+
   private final Collection<Permutation<E>> generators;
 
   private CosetTables() {
     this(Sets.<E> newHashSet(), Lists.<CosetTable<E>> newArrayList(), Lists
       .<Permutation<E>> newArrayList());
-  }
-
-  private CosetTables(Set<E> support, List<CosetTable<E>> tables,
-      Collection<Permutation<E>> generators) {
-    this.support = support;
-    this.tables = tables;
-    this.generators = generators;
   }
 
   private CosetTables(Set<E> support, List<CosetTable<E>> tables) {
@@ -140,12 +127,25 @@ final class CosetTables<E> {
     this.generators.remove(Permutations.identity());
   }
 
+  private CosetTables(Set<E> support, List<CosetTable<E>> tables,
+      Collection<Permutation<E>> generators) {
+    this.support = support;
+    this.tables = tables;
+    this.generators = generators;
+  }
+
+  public CosetTables<E> drop(int k) {
+    checkPositionIndex(k, tables.size());
+    return new CosetTables<E>(support, tables.subList(k, tables.size()));
+  }
+
   public CosetTables<E> extend(Collection<Permutation<E>> newGenerators) {
     List<Permutation<E>> gens =
         Lists.newArrayListWithCapacity(newGenerators.size());
     for (Permutation<E> g : newGenerators) {
-      if (!generates(g))
+      if (!generates(g)) {
         gens.add(g);
+      }
     }
     if (gens.isEmpty()) {
       return this;
@@ -158,8 +158,9 @@ final class CosetTables<E> {
     CosetTables<E> result =
         new CosetTables<E>(Sets.newHashSet(support), newTables,
             Lists.newArrayList(generators));
-    for (Permutation<E> g : gens)
+    for (Permutation<E> g : gens) {
       result.addGenerator(g, true);
+    }
     return immutable(result);
   }
 
@@ -173,26 +174,32 @@ final class CosetTables<E> {
         return true;
       }
       sigma = table.filter(sigma);
-      if (sigma == null)
+      if (sigma == null) {
         return false;
+      }
     }
     return sigma.isIdentity();
+  }
+
+  public Collection<Permutation<E>> getGenerators() {
+    return generators;
   }
 
   public Set<E> getSupport() {
     return support;
   }
 
-  public int size() {
-    return generated().size();
-  }
-
   public List<CosetTable<E>> getTables() {
     return tables;
   }
 
-  public Collection<Permutation<E>> getGenerators() {
-    return generators;
+  public int size() {
+    return generated().size();
+  }
+
+  public CosetTables<E> take(int k) {
+    checkPositionIndex(k, tables.size());
+    return new CosetTables<E>(support, tables.subList(0, k));
   }
 
   boolean addGenerator(Permutation<E> sigma, boolean addTables) {
@@ -228,14 +235,6 @@ final class CosetTables<E> {
     return false;
   }
 
-  private void addStabilizingTable(E e) {
-    addTable(StabilizesPredicate.on(e));
-  }
-
-  private void addTable(Predicate<? super Permutation<E>> filter) {
-    tables.add(CosetTable.table(tables.size(), filter));
-  }
-
   Collection<Permutation<E>> generated() {
     if (generated == null) {
       Set<List<Permutation<E>>> factors = Sets.cartesianProduct(tables);
@@ -248,5 +247,13 @@ final class CosetTables<E> {
       return generated = Collections2.transform(factors, composer);
     }
     return generated;
+  }
+
+  private void addStabilizingTable(E e) {
+    addTable(StabilizesPredicate.on(e));
+  }
+
+  private void addTable(Predicate<? super Permutation<E>> filter) {
+    tables.add(CosetTable.table(tables.size(), filter));
   }
 }

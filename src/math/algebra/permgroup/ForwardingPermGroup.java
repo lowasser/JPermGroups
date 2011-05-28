@@ -27,6 +27,10 @@ abstract class ForwardingPermGroup<E> extends
     return delegate().isSubgroupOf(g);
   }
 
+  @Override public boolean stabilizes(Collection<Set<E>> collection) {
+    return delegate().stabilizes(collection);
+  }
+
   @Override public boolean stabilizes(Set<E> set) {
     return delegate().stabilizes(set);
   }
@@ -39,10 +43,6 @@ abstract class ForwardingPermGroup<E> extends
   @Override public PermGroup<E> subgroup(
       Predicate<? super Permutation<E>> filter) {
     return delegate().subgroup(filter);
-  }
-
-  @Override public boolean stabilizes(Collection<Set<E>> collection) {
-    return delegate().stabilizes(collection);
   }
 
   @Override protected abstract PermGroup<E> delegate();

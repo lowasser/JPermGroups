@@ -2,12 +2,14 @@ package math.graphs.iso;
 
 import com.google.common.base.Equivalence;
 import com.google.common.base.Function;
+import com.google.common.base.Functions;
+import com.google.common.base.Objects;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -37,6 +39,28 @@ import org.jgrapht.graph.SimpleGraph;
 import org.jgrapht.graph.UnmodifiableUndirectedGraph;
 
 public class BoundedDegree {
+  private static class AutoFindingColoring<V> implements Function<V, Object> {
+    private final Map<V, Object> colors;
+    private final V v;
+    private final Object vColor;
+
+    AutoFindingColoring(Map<V, Object> colors, V v, Object vColor) {
+      this.colors = colors;
+      this.v = v;
+      this.vColor = vColor;
+    }
+
+    @Override public Object apply(V x) {
+      if (colors.containsKey(x)) {
+        return colors.get(x);
+      } else if (Objects.equal(v, x)) {
+        return vColor;
+      } else {
+        return BLANK;
+      }
+    }
+  }
+
   private static class Color {
     private final int tuplet;
     private final boolean edged;
@@ -46,7 +70,7 @@ public class BoundedDegree {
       this.edged = edged;
     }
 
-    public boolean equals(@Nullable Object o) {
+    @Override public boolean equals(@Nullable Object o) {
       if (o instanceof Color) {
         Color c = (Color) o;
         return tuplet == c.tuplet && edged == c.edged;
@@ -55,8 +79,112 @@ public class BoundedDegree {
     }
   }
 
-  public static <V1, E1, V2, E2, C> BiMap<V1, V2> isomorphism(
+  private static final class IsoColoring<V1, V2> implements Equivalence<Object> {
+    private final Map<Object, V1> v1Reps;
+    private final Map<Object, V2> v2Reps;
+    private final Function<? super V1, ?> color1;
+    private final Function<? super V2, ?> color2;
+    private final Set<Object> glue;
+
+    IsoColoring(Map<Object, V1> v1Reps, Map<Object, V2> v2Reps,
+        Function<? super V1, ?> color1, Function<? super V2, ?> color2,
+        Set<Object> glue) {
+      this.v1Reps = v1Reps;
+      this.v2Reps = v2Reps;
+      this.color1 = color1;
+      this.color2 = color2;
+      this.glue = glue;
+    }
+
+    @Override public boolean equivalent(Object a, Object b) {
+      if (glue.contains(a)) {
+        return glue.contains(b);
+      }
+      return !glue.contains(b) && Objects.equal(color(a), color(b));
+    }
+
+    @Override public int hash(Object o) {
+      return glue.contains(o) ? glue.hashCode() : color(o).hashCode();
+    }
+
+    private Object color(Object o) {
+      V1 v1 = v1Reps.get(o);
+      return (v1 == null) ? color2.apply(v2Reps.get(o)) : color1.apply(v1);
+    }
+  }
+
+  private static final Object BLANK = new Object();
+
+  public static <V, E> PermGroup<V> automorphismGroup(SimpleGraph<V, E> g) {
+    return automorphismGroup(g, Colorings.NON_COLORING);
+  }
+
+  public static <V, E> PermGroup<V> automorphismGroup(SimpleGraph<V, E> g,
+      Equivalence<? super V> coloring) {
+    List<Permutation<V>> generators = Lists.newArrayList();
+    List<V> vertices = ImmutableList.copyOf(g.vertexSet());
+    final Map<V, Object> colors =
+        Maps.newHashMapWithExpectedSize(vertices.size());
+    Collection<Set<V>> orbits = autOrbits(g, coloring);
+    for (Set<V> orbit : orbits) {
+      List<V> orbitList = ImmutableList.copyOf(orbit);
+      for (int i = 0; i < orbitList.size(); i++) {
+        final V v = orbitList.get(i);
+        final Object vColor = new Object();
+        for (int j = i + 1; j < orbitList.size(); j++) {
+          final V w = orbitList.get(j);
+          Map<V, V> iso =
+              isomorphism(g, g, new AutoFindingColoring<V>(colors, w, vColor),
+                  new AutoFindingColoring<V>(colors, v, vColor));
+          if (iso != null) {
+            generators.add(Permutations.permutation(iso));
+          }
+        }
+        colors.put(v, vColor); // now we stabilize v
+      }
+    }
+    return Groups.generateGroup(generators);
+  }
+
+  public static <V, E> Collection<Set<V>> autOrbits(SimpleGraph<V, E> g,
+      Equivalence<? super V> coloring) {
+    Set<V> todo = Sets.newLinkedHashSet(g.vertexSet());
+    ImmutableList.Builder<Set<V>> orbitsBuilder = ImmutableList.builder();
+    while (!todo.isEmpty()) {
+      Iterator<V> iter = todo.iterator();
+      V v = iter.next();
+      iter.remove();
+      ImmutableSet.Builder<V> orbitBuilder = ImmutableSet.builder();
+      orbitBuilder.add(v);
+      while (iter.hasNext()) {
+        V w = iter.next();
+        if (!coloring.equivalent(v, w))
+          continue;
+        final Object vwColor = new Object();
+        Function<V, Object> color1 =
+            Functions.forMap(ImmutableMap.of(v, vwColor), BLANK);
+        Function<V, Object> color2 =
+            Functions.forMap(ImmutableMap.of(w, vwColor), BLANK);
+        if (isomorphism(g, g, color1, color2) != null) {
+          orbitBuilder.add(w);
+          iter.remove();
+        }
+      }
+      orbitsBuilder.add(orbitBuilder.build());
+    }
+    return orbitsBuilder.build();
+  }
+
+  public static <V1, E1, V2, E2> BiMap<V1, V2> isomorphism(
       SimpleGraph<V1, E1> g1, SimpleGraph<V2, E2> g2) {
+    Function<Object, Object> coloring = Functions.constant(new Object());
+    return isomorphism(g1, g2, coloring, coloring);
+  }
+
+  public static <V1, E1, V2, E2, C> BiMap<V1, V2>
+      isomorphism(SimpleGraph<V1, E1> g1, SimpleGraph<V2, E2> g2,
+          final Function<? super V1, C> color1,
+          final Function<? super V2, C> color2) {
     int n1 = g1.vertexSet().size();
     int n2 = g2.vertexSet().size();
     int m1 = g1.edgeSet().size();
@@ -74,19 +202,23 @@ public class BoundedDegree {
       return builder.build();
     }
 
-    BiMap<V1, Object> rep1 = representatives(g1.vertexSet());
-    BiMap<V2, Object> rep2 = representatives(g2.vertexSet());
+    final BiMap<V1, Object> rep1 = representatives(g1.vertexSet());
+    final BiMap<V2, Object> rep2 = representatives(g2.vertexSet());
 
     SimpleGraph<Object, Object> glued =
         new SimpleGraph<Object, Object>(Object.class);
 
-    glued.vertexSet().addAll(rep1.values());
-    glued.vertexSet().addAll(rep2.values());
+    Graphs.addAllVertices(glued, rep1.values());
+    Graphs.addAllVertices(glued, rep2.values());
 
-    Object glue1 = new Object();
-    Object glue2 = new Object();
+    final Object glue1 = new Object();
+    final Object glue2 = new Object();
     glued.addVertex(glue1);
     glued.addVertex(glue2);
+
+    Equivalence<Object> coloring =
+        new IsoColoring<V1, V2>(rep1.inverse(), rep2.inverse(), color1, color2,
+            ImmutableSet.of(glue1, glue2));
 
     for (E1 e1 : g1.edgeSet()) {
       glued.addEdge(rep1.get(g1.getEdgeSource(e1)),
@@ -98,21 +230,31 @@ public class BoundedDegree {
     }
 
     E1 e1 = g1.edgeSet().iterator().next();
-    Object e1S = rep1.get(g1.getEdgeSource(e1));
-    Object e1T = rep1.get(g1.getEdgeTarget(e1));
+    V1 v1S = g1.getEdgeSource(e1);
+    Object e1S = rep1.get(v1S);
+    V1 v1T = g1.getEdgeTarget(e1);
+    Object e1T = rep1.get(v1T);
     glued.removeAllEdges(e1S, e1T);
     glued.addEdge(e1S, glue1);
     glued.addEdge(e1T, glue1);
     Object e0 = glued.addEdge(glue1, glue2);
 
     for (E2 e2 : g2.edgeSet()) {
-      Object e2S = rep2.get(g2.getEdgeSource(e2));
-      Object e2T = rep2.get(g2.getEdgeTarget(e2));
+      V2 v2S = g2.getEdgeSource(e2);
+      Object e2S = rep2.get(v2S);
+      V2 v2T = g2.getEdgeTarget(e2);
+      Object e2T = rep2.get(v2T);
+
+      if (!ImmutableSet.of(color1.apply(v1S), color1.apply(v1T)).equals(
+          ImmutableSet.of(color2.apply(v2S), color2.apply(v2T))))
+        continue;
+
       glued.addEdge(e2S, glue2);
       glued.addEdge(e2T, glue2);
+
       PermGroup<Object> aut =
           automorphismGroup(new UnmodifiableUndirectedGraph<Object, Object>(
-              glued), e0, Colorings.NON_COLORING);
+              glued), e0, coloring);
       for (Permutation<Object> sigma : aut.generators()) {
         if (sigma.apply(glue1).equals(glue2)) {
           ImmutableBiMap.Builder<V1, V2> builder = ImmutableBiMap.builder();
@@ -140,7 +282,6 @@ public class BoundedDegree {
     PermGroup<V> autR =
         Groups.symmetric(ImmutableSet.of(g0.getEdgeSource(e0),
             g0.getEdgeTarget(e0)));
-    System.err.println(autR);
     while (g.vertexSet().size() < g0.vertexSet().size()) {
       final SimpleGraph<V, E> gPrime =
           new SimpleGraph<V, E>(g0.getEdgeFactory());
@@ -168,9 +309,6 @@ public class BoundedDegree {
           generators.addAll(Groups.symmetric(matesC).generators());
         }
       }
-      System.err.println("Symmetric: " + generators);
-
-      System.err.println(children);
 
       Function<Set<V>, Color> aColor = new Function<Set<V>, Color>() {
         @Override public Color apply(Set<V> a) {
@@ -187,7 +325,7 @@ public class BoundedDegree {
       PermGroup<V> preservingGroup =
           ColorPreserving.colorPreservingAction(autR, parents,
               Colorings.coloring(aColor));
-      System.err.println("Preserving: " + preservingGroup + " <= " + autR);
+
       for (Permutation<V> sigma : preservingGroup.generators()) {
         Map<V, V> added = Maps.newHashMap();
         for (Map.Entry<Set<V>, Collection<V>> entry : children.asMap()
@@ -207,7 +345,6 @@ public class BoundedDegree {
         generators.add(Permutations.permutation(added));
       }
       autR = Groups.generateGroup(generators);
-      System.err.println(autR);
       g = gPrime;
     }
     return autR;

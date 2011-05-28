@@ -20,6 +20,10 @@ final class InversePermutation<E> extends AbstractPermutation<E> {
     return forward.preimage(e);
   }
 
+  @Override public Permutation<E> compose(List<Permutation<E>> taus) {
+    return forward.inverseCompose(taus);
+  }
+
   @Override public boolean equals(@Nullable Object obj) {
     return (obj instanceof InversePermutation) ? Objects.equal(forward,
         ((InversePermutation<?>) obj).forward) : super.equals(obj);
@@ -31,6 +35,10 @@ final class InversePermutation<E> extends AbstractPermutation<E> {
 
   @Override public Permutation<E> inverse() {
     return forward;
+  }
+
+  @Override public boolean isIdentity() {
+    return forward.isIdentity();
   }
 
   @Override public Parity parity() {
@@ -49,20 +57,12 @@ final class InversePermutation<E> extends AbstractPermutation<E> {
     return forward.stabilizes(s);
   }
 
-  @Override protected Set<E> createDomain() {
-    return forward.domain();
-  }
-
-  @Override public boolean isIdentity() {
-    return forward.isIdentity();
-  }
-
   @Override protected int computeOrder() {
     return forward.order();
   }
 
-  @Override public Permutation<E> compose(List<Permutation<E>> taus) {
-    return forward.inverseCompose(taus);
+  @Override protected Set<E> createDomain() {
+    return forward.domain();
   }
 
   @Override protected Permutation<E> inverseCompose(List<Permutation<E>> taus) {

@@ -10,6 +10,11 @@ import junit.framework.TestCase;
 public class SubsetsTest extends TestCase {
   private static final Set<Integer> SET = ImmutableSet.of(0, 1, 2);
 
+  public void testEmptySubsets() {
+    assertEquals(ImmutableSet.of(ImmutableSet.of()),
+        Subsets.subsetsOfSizeAtMost(SET, 0));
+  }
+
   @SuppressWarnings("unchecked") public void testSubsets() {
     Set<Set<Integer>> subsets = Subsets.subsetsOfSizeAtMost(SET, 2);
     Set<Set<Integer>> expectedSets =
@@ -20,10 +25,5 @@ public class SubsetsTest extends TestCase {
     assertEquals(expectedSets, subsets);
     assertEquals(ImmutableList.copyOf(expectedSets),
         ImmutableList.copyOf(subsets));
-  }
-
-  public void testEmptySubsets() {
-    assertEquals(ImmutableSet.of(ImmutableSet.of()),
-        Subsets.subsetsOfSizeAtMost(SET, 0));
   }
 }

@@ -22,18 +22,6 @@ final class SubgroupView<E> extends ForwardingPermGroup<E> implements
     assert superGroup.containsAll(cosetReps);
   }
 
-  @Override public Collection<Permutation<E>> cosetRepresentatives() {
-    return cosetReps;
-  }
-
-  @Override public PermGroup<E> superGroup() {
-    return superGroup;
-  }
-
-  @Override public int index() {
-    return cosetReps.size();
-  }
-
   @Override public Collection<LCoset<E>> asCosets() {
     return Collections2.transform(cosetRepresentatives(),
         new Function<Permutation<E>, LCoset<E>>() {
@@ -41,6 +29,18 @@ final class SubgroupView<E> extends ForwardingPermGroup<E> implements
             return new LCoset<E>(sigma, SubgroupView.this);
           }
         });
+  }
+
+  @Override public Collection<Permutation<E>> cosetRepresentatives() {
+    return cosetReps;
+  }
+
+  @Override public int index() {
+    return cosetReps.size();
+  }
+
+  @Override public PermGroup<E> superGroup() {
+    return superGroup;
   }
 
   @Override protected PermGroup<E> delegate() {

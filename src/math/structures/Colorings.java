@@ -18,9 +18,6 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 public final class Colorings {
-  private Colorings() {
-  }
-
   public static final Equivalence<Object> NON_COLORING =
       new Equivalence<Object>() {
         @Override public boolean equivalent(@Nullable Object a,
@@ -41,6 +38,22 @@ public final class Colorings {
         return cache.get(input);
       }
     };
+  }
+
+  public static <E> Equivalence<E> coloring(final Function<E, ?> colorFunc) {
+    return new Equivalence<E>() {
+      @Override public boolean equivalent(E a, E b) {
+        return Objects.equal(colorFunc.apply(a), colorFunc.apply(b));
+      }
+
+      @Override public int hash(E e) {
+        return Objects.hashCode(colorFunc.apply(e));
+      }
+    };
+  }
+
+  public static <E> Equivalence<E> coloring(Map<E, ?> colorMap) {
+    return coloring(Functions.forMap(colorMap));
   }
 
   public static <E> Collection<Set<E>> colors(Set<E> domain,
@@ -65,19 +78,6 @@ public final class Colorings {
     return colors.build();
   }
 
-  public static <E> Equivalence<E> coloring(final Function<E, ?> colorFunc) {
-    return new Equivalence<E>() {
-      @Override public boolean equivalent(E a, E b) {
-        return Objects.equal(colorFunc.apply(a), colorFunc.apply(b));
-      }
-
-      @Override public int hash(E e) {
-        return Objects.hashCode(colorFunc.apply(e));
-      }
-    };
-  }
-
-  public static <E> Equivalence<E> coloring(Map<E, ?> colorMap) {
-    return coloring(Functions.forMap(colorMap));
+  private Colorings() {
   }
 }

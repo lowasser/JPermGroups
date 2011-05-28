@@ -23,6 +23,11 @@ public final class Permutations {
           return checkNotNull(o);
         }
 
+        @Override public Permutation<Object> compose(
+            List<Permutation<Object>> taus) {
+          return Permutations.compose(taus);
+        }
+
         @Override public Permutation<Object> compose(Permutation<Object> tau) {
           return tau;
         }
@@ -78,11 +83,6 @@ public final class Permutations {
           return ImmutableSet.of();
         }
 
-        @Override public Permutation<Object> compose(
-            List<Permutation<Object>> taus) {
-          return Permutations.compose(taus);
-        }
-
         @Override protected Permutation<Object> inverseCompose(
             List<Permutation<Object>> taus) {
           return Permutations.compose(taus);
@@ -94,8 +94,9 @@ public final class Permutations {
       return identity();
     }
     Permutation<E> sigma = sigmas.get(0);
-    if (sigmas.size() == 1)
+    if (sigmas.size() == 1) {
       return sigma;
+    }
     return sigma.compose(sigmas.subList(1, sigmas.size()));
   }
 

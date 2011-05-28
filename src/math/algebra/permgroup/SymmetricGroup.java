@@ -20,13 +20,30 @@ import math.structures.permutation.Permutation;
 import math.structures.permutation.Permutations;
 
 final class SymmetricGroup<E> extends AbstractPermGroup<E> {
+  private static BigInteger factorial(int size) {
+    BigInteger f = BigInteger.valueOf(size);
+    for (int i = size - 1; i > 0; i--) {
+      f = f.multiply(BigInteger.valueOf(i));
+    }
+    return f;
+  }
+
   private final ImmutableSet<E> domain;
   private transient Collection<Permutation<E>> generators;
+
   private final BigInteger size;
 
   SymmetricGroup(Set<E> domain) {
     this.domain = ImmutableSet.copyOf(domain);
     this.size = factorial(this.domain.size());
+  }
+
+  @Override public boolean contains(@Nullable Object o) {
+    if (o instanceof Permutation) {
+      Permutation<?> sigma = (Permutation<?>) o;
+      return domain.containsAll(sigma.domain());
+    }
+    return false;
   }
 
   @Override public Collection<Permutation<E>> generators() {
@@ -49,8 +66,9 @@ final class SymmetricGroup<E> extends AbstractPermGroup<E> {
       BigInteger i = BigInteger.ZERO;
 
       @Override protected Permutation<E> computeNext() {
-        if (i.compareTo(size) >= 0)
+        if (i.compareTo(size) >= 0) {
           return endOfData();
+        }
         Permutation<E> result = unrank(i);
         i = i.add(BigInteger.ONE);
         return result;
@@ -58,20 +76,11 @@ final class SymmetricGroup<E> extends AbstractPermGroup<E> {
     };
   }
 
-  private static BigInteger factorial(int size) {
-    BigInteger f = BigInteger.valueOf(size);
-    for (int i = size - 1; i > 0; i--) {
-      f = f.multiply(BigInteger.valueOf(i));
+  @Override public int size() {
+    if (size.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) >= 0) {
+      return Integer.MAX_VALUE;
     }
-    return f;
-  }
-
-  @Override public boolean contains(@Nullable Object o) {
-    if (o instanceof Permutation) {
-      Permutation<?> sigma = (Permutation<?>) o;
-      return domain.containsAll(sigma.domain());
-    }
-    return false;
+    return size.intValue();
   }
 
   private Permutation<E> unrank(BigInteger d) {
@@ -86,13 +95,6 @@ final class SymmetricGroup<E> extends AbstractPermGroup<E> {
       perm.put(domain.asList().get(i), output.get(i));
     }
     return Permutations.permutation(perm);
-  }
-
-  @Override public int size() {
-    if (size.compareTo(BigInteger.valueOf(Integer.MAX_VALUE)) >= 0) {
-      return Integer.MAX_VALUE;
-    }
-    return size.intValue();
   }
 
 }

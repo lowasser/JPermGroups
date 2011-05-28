@@ -61,13 +61,25 @@ public abstract class AbstractPermGroup<E> extends AbstractSet<Permutation<E>>
     return size() <= g.size() && g.containsAll(generators());
   }
 
+  @Override public boolean stabilizes(Collection<Set<E>> collection) {
+    for (Set<E> set : collection) {
+      for (Permutation<E> sigma : generators()) {
+        if (!collection.contains(sigma.apply(set))) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   /* (non-Javadoc)
    * @see math.algebra.permgroup.PermutationGroup#stabilizes(java.util.Set)
    */
   @Override public boolean stabilizes(Set<E> set) {
     for (Permutation<E> g : generators()) {
-      if (!g.stabilizes(set))
+      if (!g.stabilizes(set)) {
         return false;
+      }
     }
     return true;
   }
@@ -82,17 +94,6 @@ public abstract class AbstractPermGroup<E> extends AbstractSet<Permutation<E>>
         new RegularPermGroup<E>(tables.drop(filters.size()));
     Collection<Permutation<E>> reps = tables.take(filters.size()).generated();
     return new SubgroupView<E>(reps, subgroup, this);
-  }
-
-  @Override public boolean stabilizes(Collection<Set<E>> collection) {
-    for(Set<E> set:collection) {
-      for(Permutation<E> sigma:generators()) {
-        if(!collection.contains(sigma.apply(set))) {
-          return false;
-        }
-      }
-    }
-    return true;
   }
 
   /* (non-Javadoc)

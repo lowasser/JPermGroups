@@ -15,10 +15,6 @@ import math.structures.permutation.Permutations;
 
 public class SylowSubgroup<E> extends ForwardingPermGroup<E> implements
     PermSubgroup<E> {
-  public static <E> SylowSubgroup<E> sylowSubgroup(PermGroup<E> g, int p) {
-    return new SylowSubgroupBuilder<E>(p, g).build();
-  }
-
   private static final class SylowSubgroupBuilder<E> {
     private final int p;
     private final PermGroup<E> g;
@@ -57,9 +53,22 @@ public class SylowSubgroup<E> extends ForwardingPermGroup<E> implements
     }
   }
 
+  public static <E> SylowSubgroup<E> sylowSubgroup(PermGroup<E> g, int p) {
+    return new SylowSubgroupBuilder<E>(p, g).build();
+  }
+
+  private static int factorOut(int n, int k) {
+    if (n % k != 0) {
+      return n;
+    }
+    n = factorOut(n, k * k);
+    return (n % k == 0) ? n / k : n;
+  }
+
   private final Collection<Permutation<E>> representatives;
   private final int p;
   private final PermGroup<E> pi;
+
   private final PermGroup<E> g;
 
   private SylowSubgroup(Collection<Permutation<E>> representatives, int p,
@@ -75,33 +84,6 @@ public class SylowSubgroup<E> extends ForwardingPermGroup<E> implements
     assert g.size() == pi.size() * representatives.size();
   }
 
-  private static int factorOut(int n, int k) {
-    if (n % k != 0)
-      return n;
-    n = factorOut(n, k * k);
-    return (n % k == 0) ? n / k : n;
-  }
-
-  @Override public Collection<Permutation<E>> cosetRepresentatives() {
-    return representatives;
-  }
-
-  @Override public PermGroup<E> superGroup() {
-    return g;
-  }
-
-  @Override public int index() {
-    return cosetRepresentatives().size();
-  }
-
-  @Override protected PermGroup<E> delegate() {
-    return pi;
-  }
-
-  public int getP() {
-    return p;
-  }
-
   @Override public Collection<LCoset<E>> asCosets() {
     return Collections2.transform(cosetRepresentatives(),
         new Function<Permutation<E>, LCoset<E>>() {
@@ -109,6 +91,26 @@ public class SylowSubgroup<E> extends ForwardingPermGroup<E> implements
             return new LCoset<E>(sigma, SylowSubgroup.this);
           }
         });
+  }
+
+  @Override public Collection<Permutation<E>> cosetRepresentatives() {
+    return representatives;
+  }
+
+  public int getP() {
+    return p;
+  }
+
+  @Override public int index() {
+    return cosetRepresentatives().size();
+  }
+
+  @Override public PermGroup<E> superGroup() {
+    return g;
+  }
+
+  @Override protected PermGroup<E> delegate() {
+    return pi;
   }
 
 }

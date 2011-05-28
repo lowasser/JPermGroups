@@ -38,8 +38,9 @@ public final class Groups {
       };
 
   public static <E> PermGroup<E> alternating(Set<E> domain) {
-    if (domain.size() <= 2)
+    if (domain.size() <= 2) {
       return trivial();
+    }
     return symmetric(domain).subgroup(EVEN_PREDICATE);
   }
 
@@ -53,8 +54,9 @@ public final class Groups {
   }
 
   public static <E> PermGroup<E> symmetric(Set<E> domain) {
-    if (domain.size() <= 1)
+    if (domain.size() <= 1) {
       return trivial();
+    }
     return new SymmetricGroup<E>(domain);
   }
 
